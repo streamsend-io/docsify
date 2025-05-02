@@ -3,46 +3,182 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Streamsend Docs</title>
+  <title>StreamSend File-chunk Pipeline</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/themes/vue.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"/>
   <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2c3e50;
+      --accent-color: #e74c3c;
+      --light-color: #ecf0f1;
+      --dark-color: #2c3e50;
+      --border-radius: 5px;
+    }
+    
     body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       background: #f9fafb;
       color: #1e293b;
     }
+    
+    /* Sidebar styling */
     .sidebar {
-      background: #e5f1fb;
-      border-right: 1px solid #d1d5db;
+      background: #f8f9fa;
+      border-right: 1px solid rgba(0,0,0,0.07);
     }
-    .sidebar a {
-      color: #3b82f6;
+    
+    .sidebar-toggle {
+      background-color: transparent;
     }
-    .sidebar a:hover {
-      color: #2563eb;
+    
+    .sidebar ul li a {
+      color: var(--secondary-color);
+      font-weight: 500;
     }
-    .app-name {
-      color: #3b82f6;
+    
+    .sidebar ul li.active > a {
+      color: var(--primary-color);
+      border-right: 2px solid var(--primary-color);
     }
+    
+    /* Content styling */
     .content {
       padding: 2rem;
     }
+    
+    .markdown-section a {
+      color: var(--primary-color);
+    }
+    
+    .markdown-section h1, 
+    .markdown-section h2, 
+    .markdown-section h3, 
+    .markdown-section h4, 
+    .markdown-section h5, 
+    .markdown-section h6 {
+      color: var(--secondary-color);
+      font-weight: 600;
+    }
+    
+    /* Button styling */
+    .markdown-section button {
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: var(--border-radius);
+      font-weight: 500;
+    }
+    
+    /* Code blocks */
     code {
       background: #f1f5f9;
       color: #111827;
       padding: 2px 4px;
       border-radius: 4px;
     }
+    
     pre code {
       background: #f1f5f9 !important;
+    }
+    
+    .markdown-section pre {
+      border-radius: var(--border-radius);
+    }
+    
+    /* App name in sidebar */
+    .app-name {
+      padding: 0 1rem;
+    }
+    
+    .app-name-link {
+      color: var(--primary-color) !important;
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+    
+    .app-name-link span {
+      color: var(--secondary-color);
+    }
+    
+    /* Site header with return link */
+    .site-header {
+      padding: 10px 0;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    
+    .site-link {
+      display: inline-block;
+      color: var(--primary-color);
+      font-weight: 500;
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    
+    .site-link:hover {
+      color: var(--accent-color);
+    }
+    
+    /* Footer styling */
+    footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      color: #666;
+      font-size: 0.9rem;
+      text-align: center;
     }
   </style>
 </head>
 <body>
   <div id="app"></div>
   <script>
-    window.$docsify = { name: 'STREAMSEND', repo: '', loadSidebar: true, subMaxLevel: 2 }
+    window.$docsify = {
+      name: 'Stream<span>Send</span>',
+      repo: 'https://github.com/streamsend-io/docsify',
+      loadSidebar: true,
+      subMaxLevel: 3,
+      search: {
+        maxAge: 86400000,
+        paths: 'auto',
+        placeholder: 'Search documentation',
+        noData: 'No results found',
+        depth: 6
+      },
+      themeColor: '#3498db',
+      auto2top: true,
+      plugins: [
+        function(hook) {
+          // Link to main site
+          hook.beforeEach(function(content) {
+            var header = [
+              '<div class="site-header">',
+              '  <a href="https://streamsend.io" class="site-link">Return to streamsend.io →</a>',
+              '</div>\n\n'
+            ].join('');
+            return header + content;
+          });
+          
+          // Custom footer
+          hook.afterEach(function(html) {
+            var footer = [
+              '<hr/>',
+              '<footer>',
+              '  <span>© ' + new Date().getFullYear() + ' StreamSend. All rights reserved.</span>',
+              '</footer>'
+            ].join('');
+            return html + footer;
+          });
+        }
+      ]
+    }
   </script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/docsify.min.js"></script>
+  
+  <!-- Additional plugins -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
 </body>
 </html>
