@@ -136,7 +136,12 @@
       name: 'Stream<span>Send</span>',
       repo: 'https://github.com/streamsend-io/docsify',
       loadSidebar: true,
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md'
+      },
       subMaxLevel: 3,
+      auto2top: true,
+      relativePath: true,
       search: {
         maxAge: 86400000,
         paths: 'auto',
@@ -145,7 +150,6 @@
         depth: 6
       },
       themeColor: '#3498db',
-      auto2top: true,
       plugins: [
         function(hook) {
           // Link to main site
@@ -182,3 +186,4 @@
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
 </body>
 </html>
+
