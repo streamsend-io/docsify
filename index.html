@@ -137,10 +137,12 @@
       repo: 'https://github.com/streamsend-io/docsify',
       loadSidebar: true,
       alias: {
+        '/.*/.*/_sidebar.md': '/_sidebar.md',
         '/.*/_sidebar.md': '/_sidebar.md'
       },
       subMaxLevel: 3,
       auto2top: true,
+      basePath: './',
       relativePath: true,
       search: {
         maxAge: 86400000,
@@ -181,9 +183,8 @@
   <!-- Additional plugins -->
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
-  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
 </body>
 </html>
-
