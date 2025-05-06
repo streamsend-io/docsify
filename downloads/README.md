@@ -3,15 +3,16 @@
 This page provides access to the latest StreamSend executables for various platforms.
 
 ## Linux AMD64
+## Linux AMD64
 
 The Linux AMD64 package contains both the uploader and downloader executables along with the required libraries.
 
-- [Latest Version](streamsend-linux-amd64-latest.tar.gz)
+- [Latest Version](file-chunk-linux-amd64-latest.tar.gz)
 
 ### Installation
 
 1. Download the latest package
-2. Extract the archive: `tar -xzf streamsend-linux-amd64-latest.tar.gz`
+2. Extract the archive: `tar -xzf file-chunk-linux-amd64-latest.tar.gz`
 3. Navigate to the extracted directory: `cd linux-amd64`
 4. Run the installation script: `./install.sh`
 
