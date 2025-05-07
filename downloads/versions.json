@@ -1,0 +1,12 @@
+[
+  {
+    "version": "latest",
+    "date": "2025-05-05",
+    "linux_amd64": "streamsend-linux-amd64-latest.tar.gz"
+  },
+  {
+    "version": "0.1.0",
+    "date": "2025-05-06",
+    "linux_amd64": "file-chunk-linux-amd64-0.1.0.tar.gz"
+  }
+]
