@@ -6,6 +6,8 @@ Stream files (any content, any size) using a Kafka Cluster.
 
 A Streamsend file-chunk pipeline is a fancy way to send a file:
 
+
+
 ## Why Stream Files?
 
 Sometimes it make more sense to stream a file rather than to send a file using file-send utilities (such as mv, cp, scp, ftp or curl).
@@ -46,9 +48,9 @@ Reduce bandwidth requirements and transfer times with built-in data compression 
 
 Protect sensitive data with advanced encryption options that secure your information throughout the entire streaming process.
 
-## See It In Action
+## What does a Streamsend file-chunk pipeline do?
 
-The animation below demonstrates how the Uploader and Downloader work together in real-time, showing the log output from both sides as file chunks are transmitted through a Kafka topic:
+A file-chunk streming pipeline must operate as a complete pipeline with Uploaders producing messages, and Downloaders consuming messages from the same topic.
 
 <div style="display: flex; flex-direction: column; width: 100%; max-width: 900px; margin: 20px auto; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
   <div style="display: flex; gap: 20px;">
@@ -90,11 +92,7 @@ The animation below demonstrates how the Uploader and Downloader work together i
   </div>
 </div>
 
-*The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file. The animation repeats approximately every 15 seconds.*
-
-## What does a Streamsend file-chunk pipeline do?
-
-A file-chunk streming pipeline must operate as a complete pipeline with Uploaders producing messages, and Downloaders consuming messages from the same topic.
+*The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file.*
 
 The Uploader splits input files into fixed size messages that are produced to a kafka topic.
 
