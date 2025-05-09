@@ -52,7 +52,7 @@ The animation below demonstrates how the Uploader and Downloader work together i
 
 <div class="streamsend-animation-container" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; display: flex; flex-direction: column; width: 100%; max-width: 900px; margin: 20px auto; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
   <div class="animation-controls" style="text-align: center; margin-bottom: 20px;">
-    <button id="toggle-animation-btn" style="background-color: #4285F4; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Pause Animation</button>
+    <button onclick="window.toggleStreamAnimation()" style="background-color: #4285F4; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">Pause Animation</button>
   </div>
   
   <div class="log-panels" style="display: flex; gap: 20px;">
@@ -78,137 +78,162 @@ The animation below demonstrates how the Uploader and Downloader work together i
   </div>
 </div>
 
+*The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file. The animation repeats approximately every 15 seconds.*
+
 <script>
-(function() {
-  // This immediately-invoked function ensures variables stay local
-  console.log('Animation script started');
-  
-  // Get references to the DOM elements
-  const uploaderLogsEl = document.getElementById('uploader-logs-container');
-  const downloaderLogsEl = document.getElementById('downloader-logs-container');
-  const toggleButton = document.getElementById('toggle-animation-btn');
-  
-  if (!uploaderLogsEl || !downloaderLogsEl || !toggleButton) {
-    console.error('Animation elements not found, IDs may be wrong:', {
-      uploader: !!uploaderLogsEl,
-      downloader: !!downloaderLogsEl,
-      button: !!toggleButton
-    });
-    return;
-  }
-  
-  console.log('Animation elements found');
+// Global version to avoid scope issues
+window.streamAnimation = {
+  isRunning: true,
+  timeoutId: null,
+  cycleCount: 0,
   
   // Animation configuration
-  const uploaderLogs = [
+  uploaderLogs: [
     { text: "audioRec_2.2MB.mpg: 2200000 bytes, starting chunking", delay: 300 },
     { text: "audioRec_2.2MB.mpg: (00001 of 00003) chunk uploaded", delay: 800 },
     { text: "audioRec_2.2MB.mpg: (00002 of 00003) chunk uploaded", delay: 1200 },
     { text: "audioRec_2.2MB.mpg: (00003 of 00003) chunk uploaded", delay: 900 },
     { text: "audioRec_2.2MB.mpg: finished 3 chunk uploads", delay: 400 },
     { text: "audioRec_2.2MB.mpg: MD5=4fb8086802ae70fc4eef88666eb96d40", delay: 600 }
-  ];
-
-  const downloaderLogs = [
+  ],
+  
+  downloaderLogs: [
     { text: "audioRec_2.2MB.mpg: (00001 of 00003) downloaded first chunk", delay: 300, requiresUploaderStep: 3 },
     { text: "audioRec_2.2MB.mpg: (00002 of 00003) consumed next chunk (1024000 downloaded)", delay: 1300, requiresUploaderStep: 3 },
     { text: "audioRec_2.2MB.mpg: (00003 of 00003) consumed next chunk (2048000 downloaded)", delay: 1100, requiresUploaderStep: 3 },
     { text: "audioRec_2.2MB.mpg: Merge complete (2200000 bytes)", delay: 800, requiresUploaderStep: 4 },
     { text: "audioRec_2.2MB.mpg: MD5 ok: 4fb8086802ae70fc4eef88666eb96d40", delay: 600, requiresUploaderStep: 5 }
-  ];
+  ]
+};
 
-  // Animation state
-  let isRunning = true;
-  let timeoutId = null;
-  let cycleCount = 0;
+// Add randomness to timing
+window.addJitter = function(delay) {
+  return delay + (Math.random() * 400 - 200);
+};
 
-  // Add randomness to timing
-  function addJitter(delay) {
-    return delay + (Math.random() * 400 - 200);
+// Add a log entry to the specified container
+window.addLogEntry = function(containerId, text, type) {
+  var container = document.getElementById(containerId);
+  if (!container) {
+    console.error('Container not found:', containerId);
+    return;
   }
-
-  // Add a log entry to the specified container
-  function addLogEntry(container, text, type) {
-    const logEntry = document.createElement('div');
-    logEntry.style.cssText = 'font-family: monospace; padding: 3px 0; font-size: 13px; white-space: pre-wrap; word-break: break-all;';
-    logEntry.style.color = type === 'uploader' ? '#174EA6' : '#0D652D';
-    logEntry.textContent = text;
-    container.appendChild(logEntry);
-    container.scrollTop = container.scrollHeight;
-  }
-
-  // Reset the animation
-  function resetAnimation() {
-    uploaderLogsEl.innerHTML = '';
-    downloaderLogsEl.innerHTML = '';
-    cycleCount++;
-    runAnimation(0, 0);
-  }
-
-  // Run the animation
-  function runAnimation(uploaderStep, downloaderStep) {
-    const currentCycle = cycleCount;
-    
-    if (!isRunning || currentCycle !== cycleCount) return;
-
-    // Handle uploader logs
-    if (uploaderStep < uploaderLogs.length) {
-      timeoutId = setTimeout(() => {
-        if (currentCycle !== cycleCount) return;
-        
-        addLogEntry(uploaderLogsEl, uploaderLogs[uploaderStep].text, 'uploader');
-        
-        runAnimation(uploaderStep + 1, downloaderStep);
-      }, addJitter(uploaderLogs[uploaderStep].delay));
-    }
-    
-    // Handle downloader logs
-    else if (downloaderStep < downloaderLogs.length) {
-      const currentDownloaderLog = downloaderLogs[downloaderStep];
-      
-      if (uploaderStep >= currentDownloaderLog.requiresUploaderStep) {
-        timeoutId = setTimeout(() => {
-          if (currentCycle !== cycleCount) return;
-          
-          addLogEntry(downloaderLogsEl, currentDownloaderLog.text, 'downloader');
-          
-          runAnimation(uploaderStep, downloaderStep + 1);
-        }, addJitter(currentDownloaderLog.delay));
-      } else {
-        runAnimation(uploaderStep, downloaderStep);
-      }
-    }
-    
-    // Restart animation after completion and a brief pause
-    else if (uploaderStep >= uploaderLogs.length && downloaderStep >= downloaderLogs.length) {
-      timeoutId = setTimeout(() => {
-        if (currentCycle !== cycleCount) return;
-        resetAnimation();
-      }, 3000);
-    }
-  }
-
-  // Toggle animation play/pause
-  toggleButton.addEventListener('click', () => {
-    isRunning = !isRunning;
-    toggleButton.textContent = isRunning ? 'Pause Animation' : 'Start Animation';
-    
-    if (isRunning) {
-      resetAnimation();
-    } else if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-  });
-
-  // Start the animation
-  console.log('Starting animation');
-  resetAnimation();
   
-  console.log('Animation initialized successfully!');
-})();
-</script>
+  var logEntry = document.createElement('div');
+  logEntry.style.cssText = 'font-family: monospace; padding: 3px 0; font-size: 13px; white-space: pre-wrap; word-break: break-all;';
+  logEntry.style.color = type === 'uploader' ? '#174EA6' : '#0D652D';
+  logEntry.textContent = text;
+  container.appendChild(logEntry);
+  container.scrollTop = container.scrollHeight;
+  
+  console.log('Added log entry to', containerId, text);
+};
 
-*The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file. The animation repeats approximately every 15 seconds.*
+// Reset the animation
+window.resetAnimation = function() {
+  var uploaderLogsEl = document.getElementById('uploader-logs-container');
+  var downloaderLogsEl = document.getElementById('downloader-logs-container');
+  
+  if (uploaderLogsEl) uploaderLogsEl.innerHTML = '';
+  if (downloaderLogsEl) downloaderLogsEl.innerHTML = '';
+  
+  window.streamAnimation.cycleCount++;
+  window.runAnimation(0, 0);
+  
+  console.log('Animation reset');
+};
+
+// Run the animation
+window.runAnimation = function(uploaderStep, downloaderStep) {
+  var animation = window.streamAnimation;
+  var currentCycle = animation.cycleCount;
+  
+  if (!animation.isRunning || currentCycle !== animation.cycleCount) return;
+
+  console.log('Running animation step:', uploaderStep, downloaderStep);
+
+  // Handle uploader logs
+  if (uploaderStep < animation.uploaderLogs.length) {
+    animation.timeoutId = setTimeout(function() {
+      if (currentCycle !== animation.cycleCount) return;
+      
+      window.addLogEntry('uploader-logs-container', animation.uploaderLogs[uploaderStep].text, 'uploader');
+      
+      window.runAnimation(uploaderStep + 1, downloaderStep);
+    }, window.addJitter(animation.uploaderLogs[uploaderStep].delay));
+  }
+  
+  // Handle downloader logs
+  else if (downloaderStep < animation.downloaderLogs.length) {
+    var currentDownloaderLog = animation.downloaderLogs[downloaderStep];
+    
+    if (uploaderStep >= currentDownloaderLog.requiresUploaderStep) {
+      animation.timeoutId = setTimeout(function() {
+        if (currentCycle !== animation.cycleCount) return;
+        
+        window.addLogEntry('downloader-logs-container', currentDownloaderLog.text, 'downloader');
+        
+        window.runAnimation(uploaderStep, downloaderStep + 1);
+      }, window.addJitter(currentDownloaderLog.delay));
+    } else {
+      window.runAnimation(uploaderStep, downloaderStep);
+    }
+  }
+  
+  // Restart animation after completion and a brief pause
+  else if (uploaderStep >= animation.uploaderLogs.length && downloaderStep >= animation.downloaderLogs.length) {
+    animation.timeoutId = setTimeout(function() {
+      if (currentCycle !== animation.cycleCount) return;
+      window.resetAnimation();
+    }, 3000);
+  }
+};
+
+// Toggle animation play/pause
+window.toggleStreamAnimation = function() {
+  var animation = window.streamAnimation;
+  animation.isRunning = !animation.isRunning;
+  
+  var buttons = document.querySelectorAll('.animation-controls button');
+  buttons.forEach(function(button) {
+    button.textContent = animation.isRunning ? 'Pause Animation' : 'Start Animation';
+  });
+  
+  if (animation.isRunning) {
+    window.resetAnimation();
+  } else if (animation.timeoutId) {
+    clearTimeout(animation.timeoutId);
+  }
+  
+  console.log('Animation toggled:', animation.isRunning ? 'running' : 'paused');
+};
+
+// Start the animation - using multiple methods to ensure it runs
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOMContentLoaded event fired');
+  setTimeout(function() {
+    console.log('Starting animation (DOMContentLoaded timeout)');
+    window.resetAnimation();
+  }, 1000);
+});
+
+// Alternative approach with window.onload
+window.onload = function() {
+  console.log('window.onload event fired');
+  setTimeout(function() {
+    console.log('Starting animation (window.onload timeout)');
+    window.resetAnimation();
+  }, 1500);
+};
+
+// Immediate attempt - may work if script runs after DOM is already loaded
+setTimeout(function() {
+  console.log('Immediate timeout fired');
+  window.resetAnimation();
+}, 2000);
+
+console.log('Animation script loaded');
+</script>
 
 <style>
 .streamsend-animation-container {
