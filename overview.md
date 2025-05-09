@@ -4,11 +4,9 @@
 
 Stream files (any content, any size) using a Kafka Cluster.
 
-A Streamsend file-chunk pipeline is a fancy way to send a file:
-
 ## What does a Streamsend file-chunk pipeline do?
 
-A file-chunk streming pipeline must operate as a complete pipeline with Uploaders producing messages, and Downloaders consuming messages from the same topic.
+A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to end with Uploaders producing messages and Downloaders consuming messages using the same topic.
 
 <div style="display: flex; flex-direction: column; width: 100%; max-width: 900px; margin: 20px auto; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
   <div style="display: flex; gap: 20px;">
@@ -52,10 +50,6 @@ A file-chunk streming pipeline must operate as a complete pipeline with Uploader
 
 *The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file.*
 
-The Uploader splits input files into fixed size messages that are produced to a kafka topic.
-
-The Downloader consumes the file chunks and reassembles the file at the target server.
-
 ## Why Stream Files?
 
 Sometimes it make more sense to stream a file rather than to send a file using file-send utilities (such as mv, cp, scp, ftp or curl).
@@ -74,9 +68,21 @@ Splitting (or "chunking") input files into events allows files of any size (and 
 
 A file streaming pipeline is built upon fifteen years of Apache Kafka engineering excellence, including unlimited scalability, low latency, multi-platform compatibility, robust security and a thriving engineering community.
 
+## Key Use Cases
+
 ### Files Alongside Events
 
-Use Kafka for more: now you can use the Kafka pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability
+Use Kafka for more: now you can use the Kafka pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability.
+
+Target event-driven industries that also send files: manufacturing, retail, automotive, airlines.
+
+### Edge Data Collection
+
+Stream files over unreliable networks using infinite retries, flexible encryption, and compression. Use a Streamsend Uploader instead of an edge broker for applications like drones, vehicles, connected soldier systems, utilities, and mining operations.
+
+### Data Funnels
+
+Create data collection hubs where hundreds or thousands of Uploaders stream to a single Downloader, creating a funnel of data. Ideal for workstation data backup, point of sale systems, and centralized data collection.
 
 ## Kafka Protocol
 
@@ -96,13 +102,32 @@ Reduce bandwidth requirements and transfer times with built-in data compression 
 
 Protect sensitive data with advanced encryption options that secure your information throughout the entire streaming process.
 
+## Technical Details
+
+The latest Streamsend release is built with Rust, making it:
+- Smaller and faster than previous versions
+- Able to run on much smaller resources (no Kafka Connect required)
+- Stateless, with chunking and merging performed in-memory
+- Single-threaded but highly efficient
+
+Additional features include:
+- Support for directory structures (mirroring subdirectories to the downloader)
+- Automatic creation of separate directories for each uploader
+- Works on local filesystems and Kubernetes persistent volumes
+
 ## What does a Streamsend file-chunk pipeline not do?
 
 A Streamsend file-chunk pipeline doesn't care what is actually in a file: so it cannot register (or validate) a schema; or convert or unzip contents
 
-It only chunks a file along binary.chunk.file.bytes
-boundaries: not on any other measure (such as end of line; or object; elapsed time or frames)
+It only chunks a file along binary.chunk.file.bytes boundaries: not on any other measure (such as end of line; or object; elapsed time or frames)
 
 A Streamsend file-chunk pipeline recreates the file: it cannot be used to stream chunks to a different consumer (for example, to a stream processor or to a object store)
 
 Chunking and merging require measurable elapsed time: so while this technique is tunable and potentially very fast; it is not in the realm of ultra-low latency data streaming (for high-frequency trading or any microsecond (or indeed millisecond) requirements)
+
+### Limitations
+
+- Works with closed files only - no "live" streaming media, video feeds, or appending files
+- File sizes are limited by the uploader & downloader memory size
+- Local filesystems only (S3/HDFS support planned for future releases)
+- No stream processing or schema registry integration as this requires awareness of content-data
