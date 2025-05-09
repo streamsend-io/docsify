@@ -189,9 +189,23 @@ The animation below demonstrates how the Uploader and Downloader work together i
 </style>
 
 <script>
+// Wait for Docsify to finish rendering the page
+window.$docsify.plugins = [].concat(function(hook, vm) {
+  hook.doneEach(function() {
+    // This runs after each page is rendered
+    setTimeout(initStreamsendAnimation, 500);
+  });
+}, window.$docsify.plugins || []);
+
 // This function creates and manages the Streamsend animation
 function initStreamsendAnimation() {
   // Create animation container
+  const placeholder = document.getElementById('streamsend-animation');
+  if (!placeholder) return; // Exit if we're not on the right page
+  
+  // Clear any previous instances
+  placeholder.innerHTML = '';
+  
   const container = document.createElement('div');
   container.className = 'streamsend-animation-container';
   container.innerHTML = `
@@ -222,125 +236,134 @@ function initStreamsendAnimation() {
     </div>
   `;
   
-  // Find the animation placeholder and insert our animation
-  const placeholder = document.getElementById('streamsend-animation');
-  if (placeholder) {
-    placeholder.appendChild(container);
-    
-    // Animation configuration
-    const uploaderLogs = [
-      { text: "audioRec_2.2MB.mpg: 2200000 bytes, starting chunking", delay: 300 },
-      { text: "audioRec_2.2MB.mpg: (00001 of 00003) chunk uploaded", delay: 800 },
-      { text: "audioRec_2.2MB.mpg: (00002 of 00003) chunk uploaded", delay: 1200 },
-      { text: "audioRec_2.2MB.mpg: (00003 of 00003) chunk uploaded", delay: 900 },
-      { text: "audioRec_2.2MB.mpg: finished 3 chunk uploads", delay: 400 },
-      { text: "audioRec_2.2MB.mpg: MD5=4fb8086802ae70fc4eef88666eb96d40", delay: 600 }
-    ];
+  placeholder.appendChild(container);
+  
+  // Animation configuration
+  const uploaderLogs = [
+    { text: "audioRec_2.2MB.mpg: 2200000 bytes, starting chunking", delay: 300 },
+    { text: "audioRec_2.2MB.mpg: (00001 of 00003) chunk uploaded", delay: 800 },
+    { text: "audioRec_2.2MB.mpg: (00002 of 00003) chunk uploaded", delay: 1200 },
+    { text: "audioRec_2.2MB.mpg: (00003 of 00003) chunk uploaded", delay: 900 },
+    { text: "audioRec_2.2MB.mpg: finished 3 chunk uploads", delay: 400 },
+    { text: "audioRec_2.2MB.mpg: MD5=4fb8086802ae70fc4eef88666eb96d40", delay: 600 }
+  ];
 
-    const downloaderLogs = [
-      { text: "audioRec_2.2MB.mpg: (00001 of 00003) downloaded first chunk", delay: 300, requiresUploaderStep: 3 },
-      { text: "audioRec_2.2MB.mpg: (00002 of 00003) consumed next chunk (1024000 downloaded)", delay: 1300, requiresUploaderStep: 3 },
-      { text: "audioRec_2.2MB.mpg: (00003 of 00003) consumed next chunk (2048000 downloaded)", delay: 1100, requiresUploaderStep: 3 },
-      { text: "audioRec_2.2MB.mpg: Merge complete (2200000 bytes)", delay: 800, requiresUploaderStep: 4 },
-      { text: "audioRec_2.2MB.mpg: MD5 ok: 4fb8086802ae70fc4eef88666eb96d40", delay: 600, requiresUploaderStep: 5 }
-    ];
+  const downloaderLogs = [
+    { text: "audioRec_2.2MB.mpg: (00001 of 00003) downloaded first chunk", delay: 300, requiresUploaderStep: 3 },
+    { text: "audioRec_2.2MB.mpg: (00002 of 00003) consumed next chunk (1024000 downloaded)", delay: 1300, requiresUploaderStep: 3 },
+    { text: "audioRec_2.2MB.mpg: (00003 of 00003) consumed next chunk (2048000 downloaded)", delay: 1100, requiresUploaderStep: 3 },
+    { text: "audioRec_2.2MB.mpg: Merge complete (2200000 bytes)", delay: 800, requiresUploaderStep: 4 },
+    { text: "audioRec_2.2MB.mpg: MD5 ok: 4fb8086802ae70fc4eef88666eb96d40", delay: 600, requiresUploaderStep: 5 }
+  ];
 
-    // Animation state
-    let isRunning = true;
-    let timeoutId = null;
-    let cycleCount = 0;
+  // Animation state
+  let isRunning = true;
+  let timeoutId = null;
+  let cycleCount = 0;
 
-    // DOM elements
-    const uploaderLogsEl = document.getElementById('uploader-logs');
-    const downloaderLogsEl = document.getElementById('downloader-logs');
-    const toggleButton = document.getElementById('toggle-animation');
+  // DOM elements
+  const uploaderLogsEl = document.getElementById('uploader-logs');
+  const downloaderLogsEl = document.getElementById('downloader-logs');
+  const toggleButton = document.getElementById('toggle-animation');
+  
+  if (!uploaderLogsEl || !downloaderLogsEl || !toggleButton) {
+    console.error('Animation elements not found!');
+    return;
+  }
 
-    // Add randomness to timing
-    function addJitter(delay) {
-      return delay + (Math.random() * 400 - 200);
-    }
+  // Add randomness to timing
+  function addJitter(delay) {
+    return delay + (Math.random() * 400 - 200);
+  }
 
-    // Add a log entry to the specified container
-    function addLogEntry(container, text, type) {
-      const logEntry = document.createElement('div');
-      logEntry.className = `log-entry ${type}-log`;
-      logEntry.textContent = text;
-      container.appendChild(logEntry);
-      container.scrollTop = container.scrollHeight;
-    }
+  // Add a log entry to the specified container
+  function addLogEntry(container, text, type) {
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${type}-log`;
+    logEntry.textContent = text;
+    container.appendChild(logEntry);
+    container.scrollTop = container.scrollHeight;
+  }
 
-    // Reset the animation
-    function resetAnimation() {
-      uploaderLogsEl.innerHTML = '';
-      downloaderLogsEl.innerHTML = '';
-      cycleCount++;
-      runAnimation(0, 0);
-    }
-
-    // Run the animation
-    function runAnimation(uploaderStep, downloaderStep) {
-      const currentCycle = cycleCount;
-      
-      if (!isRunning || currentCycle !== cycleCount) return;
-
-      // Handle uploader logs
-      if (uploaderStep < uploaderLogs.length) {
-        timeoutId = setTimeout(() => {
-          if (currentCycle !== cycleCount) return;
-          
-          addLogEntry(uploaderLogsEl, uploaderLogs[uploaderStep].text, 'uploader');
-          
-          runAnimation(uploaderStep + 1, downloaderStep);
-        }, addJitter(uploaderLogs[uploaderStep].delay));
-      }
-      
-      // Handle downloader logs
-      else if (downloaderStep < downloaderLogs.length) {
-        const currentDownloaderLog = downloaderLogs[downloaderStep];
-        
-        if (uploaderStep >= currentDownloaderLog.requiresUploaderStep) {
-          timeoutId = setTimeout(() => {
-            if (currentCycle !== cycleCount) return;
-            
-            addLogEntry(downloaderLogsEl, currentDownloaderLog.text, 'downloader');
-            
-            runAnimation(uploaderStep, downloaderStep + 1);
-          }, addJitter(currentDownloaderLog.delay));
-        } else {
-          runAnimation(uploaderStep, downloaderStep);
-        }
-      }
-      
-      // Restart animation after completion and a brief pause
-      else if (uploaderStep >= uploaderLogs.length && downloaderStep >= downloaderLogs.length) {
-        timeoutId = setTimeout(() => {
-          if (currentCycle !== cycleCount) return;
-          resetAnimation();
-        }, 3000);
-      }
-    }
-
-    // Toggle animation play/pause
-    toggleButton.addEventListener('click', () => {
-      isRunning = !isRunning;
-      toggleButton.textContent = isRunning ? 'Pause Animation' : 'Start Animation';
-      
-      if (isRunning) {
-        resetAnimation();
-      } else if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    });
-
-    // Start the animation
+  // Reset the animation
+  function resetAnimation() {
+    uploaderLogsEl.innerHTML = '';
+    downloaderLogsEl.innerHTML = '';
+    cycleCount++;
     runAnimation(0, 0);
   }
+
+  // Run the animation
+  function runAnimation(uploaderStep, downloaderStep) {
+    const currentCycle = cycleCount;
+    
+    if (!isRunning || currentCycle !== cycleCount) return;
+
+    // Handle uploader logs
+    if (uploaderStep < uploaderLogs.length) {
+      timeoutId = setTimeout(() => {
+        if (currentCycle !== cycleCount) return;
+        
+        addLogEntry(uploaderLogsEl, uploaderLogs[uploaderStep].text, 'uploader');
+        
+        runAnimation(uploaderStep + 1, downloaderStep);
+      }, addJitter(uploaderLogs[uploaderStep].delay));
+    }
+    
+    // Handle downloader logs
+    else if (downloaderStep < downloaderLogs.length) {
+      const currentDownloaderLog = downloaderLogs[downloaderStep];
+      
+      if (uploaderStep >= currentDownloaderLog.requiresUploaderStep) {
+        timeoutId = setTimeout(() => {
+          if (currentCycle !== cycleCount) return;
+          
+          addLogEntry(downloaderLogsEl, currentDownloaderLog.text, 'downloader');
+          
+          runAnimation(uploaderStep, downloaderStep + 1);
+        }, addJitter(currentDownloaderLog.delay));
+      } else {
+        runAnimation(uploaderStep, downloaderStep);
+      }
+    }
+    
+    // Restart animation after completion and a brief pause
+    else if (uploaderStep >= uploaderLogs.length && downloaderStep >= downloaderLogs.length) {
+      timeoutId = setTimeout(() => {
+        if (currentCycle !== cycleCount) return;
+        resetAnimation();
+      }, 3000);
+    }
+  }
+
+  // Toggle animation play/pause
+  toggleButton.addEventListener('click', () => {
+    isRunning = !isRunning;
+    toggleButton.textContent = isRunning ? 'Pause Animation' : 'Start Animation';
+    
+    if (isRunning) {
+      resetAnimation();
+    } else if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+  });
+
+  // Start the animation
+  resetAnimation();
+  
+  // Debug info
+  console.log('Animation initialized successfully!');
 }
 
-// Initialize the animation when the page loads
-setTimeout(function() {
-  initStreamsendAnimation();
-}, 1000);
+// Also try the fallback approach 
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(function() {
+    if (!document.querySelector('.streamsend-animation-container')) {
+      console.log('Trying fallback animation initialization');
+      initStreamsendAnimation();
+    }
+  }, 2000);
+});
 </script>
 
 ## What does a Streamsend file-chunk pipeline do?
