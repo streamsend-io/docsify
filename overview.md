@@ -4,7 +4,7 @@
 
 Stream files (any content, any size) using a Kafka Cluster.
 
-The Kafka Connect File Chunk connectors are a fancy way to send a file:
+A Streamsend file-chunk pipeline is a fancy way to send a file:
 
 ## Why Stream Files?
 
@@ -26,7 +26,7 @@ A file streaming pipeline is built upon fifteen years of Apache Kafka engineerin
 
 ### Files Alongside Events
 
-For example, if you are an Insurance Provider, you may need to send an updated policy pdf alongside an updateEvent from an updatePolicy microservice.
+Use Kafka for more: now you can use the Kafka pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability
 
 ## Kafka Protocol
 
