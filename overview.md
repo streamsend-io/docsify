@@ -62,23 +62,17 @@ Sometimes it make more sense to stream a file rather than to send a file using f
 - Virtually unlimited parallel scalability for data uploaders and downloaders
 - Leverage Apache Kafka with its vibrant open source development community
 
-### What is data streaming?
-
-Splitting (or "chunking") input files into events allows files of any size (and of any content type) to be streamed using a file streaming pipline.
-
-A file streaming pipeline is built upon fifteen years of Apache Kafka engineering excellence, including unlimited scalability, low latency, multi-platform compatibility, robust security and a thriving engineering community.
-
 ## Key Use Cases
 
 ### Files Alongside Events
 
 Use Kafka for more: now you can use the Kafka pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability.
 
-Target event-driven industries that also send files: manufacturing, retail, automotive, airlines.
+Beneficial for event-driven industries that also send files: manufacturing, retail, automotive, airlines.
 
 ### Edge Data Collection
 
-Stream files over unreliable networks using infinite retries, flexible encryption, and compression. Use a Streamsend Uploader instead of an edge broker for applications like drones, vehicles, connected soldier systems, utilities, and mining operations.
+Stream files using the Kafka Protocol over unreliable networks using infinite retries, parallelism, flexible encryption, and compression. Use a Streamsend Uploader to send files at the edge for applications like drones, vehicles, offshore utilities, and mining operations.
 
 ### Data Funnels
 
@@ -88,11 +82,11 @@ Create data collection hubs where hundreds or thousands of Uploaders stream to a
 
 ### Infinite Retries
 
-Perhaps you need to send large volumes of images from a remote field-team with a poor network connection; where you want to "click send and forget" and not worry about network service interruptions.
+A streaming protocol handles network service interruptions by retrying: when configured to *retry infinitely* a Streamsend Uploader will silently and automatically continue to try to send file-chunks when network disconnections occur. This differs from some file-send protocols; which fail and terminate when network errors occur
 
 ### Low Latency
 
-Most file-senders are sequential and serial: chunks of a file are sent in parallel, using Kafka topic partitions and consumer groups.
+An Uploader, like any Kafka producer, can send file chunks serially or in parallel, using features such as topic partitions and in-flight connections. This edition is serial, but a parallelized edition will be available soon.
 
 ### Compression
 
