@@ -547,5 +547,85 @@
     });
   });
 </script>
+
+
+
+
+
+<!-- Add this diagnostic script to temporarily debug the issue -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  window.$docsify = window.$docsify || {};
+  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
+    hook.doneEach(function() {
+      console.log('=== DIAGNOSTIC START ===');
+      console.log('1. Current path:', vm.route.path);
+      console.log('2. Current hash:', window.location.hash);
+      console.log('3. Page title:', document.title);
+      
+      // Check all paragraphs
+      const paragraphs = document.querySelectorAll('p');
+      console.log('4. Found', paragraphs.length, 'paragraphs');
+      paragraphs.forEach((p, i) => {
+        if (p.textContent.includes('Streamsend file-chunk pipeline')) {
+          console.log(`   - Paragraph ${i} contains target text:`, p.textContent.substring(0, 100) + '...');
+          console.log('   - Has data-animated:', p.dataset.animated);
+          console.log('   - Parent element:', p.parentElement.tagName, p.parentElement.className);
+        }
+      });
+      
+      // Check all code blocks
+      const codeBlocks = document.querySelectorAll('pre');
+      console.log('5. Found', codeBlocks.length, 'code blocks');
+      codeBlocks.forEach((pre, i) => {
+        console.log(`   - Code block ${i}:`);
+        console.log('     - Classes:', pre.className);
+        console.log('     - Has data-animated:', pre.dataset.animated);
+        console.log('     - First 50 chars:', pre.textContent.substring(0, 50) + '...');
+        console.log('     - Has code child:', !!pre.querySelector('code'));
+        console.log('     - Style opacity:', pre.style.opacity);
+        console.log('     - Style transform:', pre.style.transform);
+      });
+      
+      // Check if animation script exists
+      console.log('6. Animation functions check:');
+      console.log('   - typeText function exists:', typeof typeText !== 'undefined');
+      console.log('   - typeCodeBlock function exists:', typeof typeCodeBlock !== 'undefined');
+      
+      // Check timing
+      console.log('7. Page timing:');
+      console.log('   - Document ready state:', document.readyState);
+      console.log('   - Time since navigation:', performance.now());
+      
+      // Check for animation styles
+      console.log('8. Animation styles check:');
+      const styles = document.styleSheets;
+      let foundAnimationStyles = false;
+      for (let i = 0; i < styles.length; i++) {
+        try {
+          const rules = styles[i].cssRules || styles[i].rules;
+          for (let j = 0; j < rules.length; j++) {
+            if (rules[j].selectorText && (rules[j].selectorText.includes('slide-in') || rules[j].selectorText.includes('typing'))) {
+              foundAnimationStyles = true;
+              console.log('   - Found animation style:', rules[j].selectorText);
+            }
+          }
+        } catch (e) {
+          // Ignore cross-origin stylesheets
+        }
+      }
+      console.log('   - Animation styles found:', foundAnimationStyles);
+      
+      console.log('=== DIAGNOSTIC END ===');
+    });
+  });
+});
+</script>
+
+
+
+
+
 </body>
 </html>
