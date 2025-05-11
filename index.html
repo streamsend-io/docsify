@@ -429,9 +429,93 @@
     min-height: 1.2em;
   }
 </style>
+<!-- Replace the animation code in your index.html with this fixed version -->
+
+<style>
+  /* Animation styles */
+  .slide-in-left {
+    animation: slideInLeft 0.5s ease-out forwards;
+  }
+  
+  .slide-in-right {
+    animation: slideInRight 0.5s ease-out forwards;
+  }
+  
+  @keyframes slideInLeft {
+    from { transform: translateX(-20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideInRight {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  pre.animating code {
+    display: block;
+  }
+  
+  pre.animating code > div {
+    min-height: 1.2em;
+    font-family: monospace;
+  }
+</style>
 
 <script>
-  // Animation for the file-chunk pipeline code blocks
+document.addEventListener('DOMContentLoaded', function() {
+  // Define animation functions in a broader scope
+  window.streamSendAnimation = {
+    typeText: function(element, text, callback, speed = 20) {
+      element.textContent = '';
+      let index = 0;
+      
+      function typeChar() {
+        if (index < text.length) {
+          element.textContent += text[index];
+          index++;
+          setTimeout(typeChar, speed);
+        } else if (callback) {
+          setTimeout(callback, 300);
+        }
+      }
+      
+      typeChar();
+    },
+    
+    typeCodeBlock: function(codeBlock, callback) {
+      const code = codeBlock.querySelector('code');
+      if (!code) {
+        if (callback) callback();
+        return;
+      }
+      
+      const lines = code.textContent.split('\n').filter(line => line.trim());
+      code.textContent = '';
+      code.style.display = 'block';
+      
+      let lineIndex = 0;
+      
+      function typeLine() {
+        if (lineIndex < lines.length) {
+          const line = lines[lineIndex];
+          const lineElement = document.createElement('div');
+          lineElement.style.minHeight = '1.2em';
+          lineElement.style.fontFamily = 'monospace';
+          code.appendChild(lineElement);
+          
+          window.streamSendAnimation.typeText(lineElement, line, function() {
+            lineIndex++;
+            typeLine();
+          }, 30);
+        } else if (callback) {
+          callback();
+        }
+      }
+      
+      typeLine();
+    }
+  };
+
   window.$docsify = window.$docsify || {};
   window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
     hook.doneEach(function() {
@@ -440,6 +524,7 @@
       // Only run on the overview page
       const path = vm.route.path;
       if (path !== '/' && path !== '/overview' && !path.includes('overview')) {
+        console.log('Not on overview page, skipping');
         return;
       }
       
@@ -455,100 +540,74 @@
         }
       }
       
-      if (!targetParagraph || targetParagraph.dataset.animated === 'true') return;
-      
-      // Mark as animated to prevent re-animation
-      targetParagraph.dataset.animated = 'true';
-      
-      // Type lines in code blocks with terminal effect
-      function typeCodeBlock(codeBlock, callback) {
-        const code = codeBlock.querySelector('code');
-        if (!code) return callback && callback();
-        
-        const lines = code.textContent.split('\n').filter(line => line.trim());
-        code.textContent = '';
-        code.style.display = 'block';
-        
-        let lineIndex = 0;
-        
-        function typeLine() {
-          if (lineIndex < lines.length) {
-            const line = lines[lineIndex];
-            const lineElement = document.createElement('div');
-            lineElement.style.minHeight = '1.2em';
-            lineElement.style.fontFamily = 'monospace';
-            code.appendChild(lineElement);
-            
-            // Type character by character
-            let charIndex = 0;
-            function typeChar() {
-              if (charIndex < line.length) {
-                lineElement.textContent += line[charIndex];
-                charIndex++;
-                setTimeout(typeChar, 30); // Adjust typing speed
-              } else {
-                lineIndex++;
-                setTimeout(typeLine, 200); // Pause between lines
-              }
-            }
-            
-            typeChar();
-          } else if (callback) {
-            callback();
-          }
-        }
-        
-        typeLine();
+      if (!targetParagraph) {
+        console.log('Target paragraph not found');
+        return;
       }
+      
+      // Check if already animated
+      if (targetParagraph.dataset.animated === 'true') {
+        console.log('Already animated');
+        return;
+      }
+      
+      // Mark as animated
+      targetParagraph.dataset.animated = 'true';
       
       // Find code blocks that come after the paragraph
       let nextElement = targetParagraph.nextElementSibling;
       const codeBlocks = [];
       
-      // Collect the next two pre/code blocks
+      // Collect code blocks
       while (nextElement && codeBlocks.length < 2) {
         if (nextElement.tagName === 'PRE') {
           codeBlocks.push(nextElement);
+          console.log('Found code block:', codeBlocks.length);
         }
         nextElement = nextElement.nextElementSibling;
       }
       
-      if (codeBlocks.length >= 2) {
-        // Hide code blocks initially
-        codeBlocks.forEach(block => {
-          block.style.opacity = '0';
-          block.classList.add('animating');
-        });
-        
-        // Start animation after a short delay
-        setTimeout(() => {
-          console.log('Starting code block animations...');
-          
-          // First code block (Uploader)
-          const uploaderBlock = codeBlocks[0];
-          uploaderBlock.style.opacity = '1';
-          uploaderBlock.classList.add('slide-in-left');
-          
-          typeCodeBlock(uploaderBlock, function() {
-            // Second code block (Downloader)
-            const downloaderBlock = codeBlocks[1];
-            
-            setTimeout(() => {
-              downloaderBlock.style.opacity = '1';
-              downloaderBlock.classList.add('slide-in-right');
-              
-              typeCodeBlock(downloaderBlock, function() {
-                console.log('Animation complete!');
-              });
-            }, 500); // Delay before starting downloader animation
-          });
-        }, 1000); // Initial delay before starting animations
+      if (codeBlocks.length < 2) {
+        console.log('Not enough code blocks found:', codeBlocks.length);
+        return;
       }
+      
+      console.log('Starting animation sequence...');
+      
+      // Hide code blocks initially
+      codeBlocks.forEach(block => {
+        block.style.opacity = '0';
+        block.classList.add('animating');
+      });
+      
+      // Start animation after a short delay
+      setTimeout(() => {
+        // First code block (Uploader)
+        const uploaderBlock = codeBlocks[0];
+        uploaderBlock.style.opacity = '1';
+        uploaderBlock.classList.add('slide-in-left');
+        
+        window.streamSendAnimation.typeCodeBlock(uploaderBlock, function() {
+          console.log('Uploader animation complete');
+          
+          // Second code block (Downloader)
+          const downloaderBlock = codeBlocks[1];
+          
+          setTimeout(() => {
+            downloaderBlock.style.opacity = '1';
+            downloaderBlock.classList.add('slide-in-right');
+            
+            window.streamSendAnimation.typeCodeBlock(downloaderBlock, function() {
+              console.log('Downloader animation complete');
+              console.log('All animations complete!');
+            });
+          }, 500);
+        });
+      }, 1000);
     });
   });
+});
 </script>
-
-
 
 
 
