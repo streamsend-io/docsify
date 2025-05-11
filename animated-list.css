@@ -1,0 +1,55 @@
+/* Styles for the animated feature list */
+
+/* Add some visual polish to the animated list items */
+.markdown-section ul li {
+  position: relative;
+}
+
+/* Style for the specific section */
+.markdown-section h2 + ul li {
+  padding-left: 1.5em;
+  margin-bottom: 0.8em;
+  line-height: 1.6;
+}
+
+/* Optional: Add a subtle background highlight during animation */
+.animating-item {
+  background: linear-gradient(90deg, transparent 0%, rgba(42, 141, 255, 0.05) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: highlight 2s ease-out;
+}
+
+@keyframes highlight {
+  0% {
+    background-position: -100% 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+/* Typing cursor effect (optional) */
+.typing-cursor::after {
+  content: '|';
+  display: inline-block;
+  margin-left: 2px;
+  animation: blink 1s infinite;
+  color: #42b983;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* Ensure smooth transitions */
+.markdown-section ul li {
+  transition: all 0.3s ease;
+}
+
+/* Add a subtle hover effect */
+.markdown-section ul li:hover {
+  transform: translateX(5px);
+  transition: transform 0.2s ease;
+}
