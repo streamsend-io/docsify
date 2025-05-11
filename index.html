@@ -770,6 +770,88 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+<!-- Replace your animation code with this visual test -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  window.$docsify = window.$docsify || {};
+  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
+    hook.doneEach(function() {
+      // Only run on overview page
+      if (vm.route.path !== '/' && vm.route.path !== '/overview') return;
+      
+      // Add visual indicator
+      const indicator = document.createElement('div');
+      indicator.innerHTML = 'ANIMATION SCRIPT LOADED';
+      indicator.style.position = 'fixed';
+      indicator.style.top = '10px';
+      indicator.style.right = '10px';
+      indicator.style.background = 'red';
+      indicator.style.color = 'white';
+      indicator.style.padding = '10px';
+      indicator.style.zIndex = '9999';
+      document.body.appendChild(indicator);
+      
+      // Find elements with text content
+      setTimeout(() => {
+        indicator.innerHTML = 'SEARCHING FOR BOXES...';
+        
+        // Look for the actual box elements based on your screenshot
+        // They appear to be divs with blue/green borders
+        const allElements = document.querySelectorAll('*');
+        let uploaderBox = null;
+        let downloaderBox = null;
+        
+        allElements.forEach(element => {
+          const text = element.textContent;
+          const style = window.getComputedStyle(element);
+          
+          // Check for Uploader box (blue border)
+          if (text.includes('audio.mpg: 2200000 bytes') && 
+              text.includes('starting chunking') &&
+              !uploaderBox) {
+            uploaderBox = element;
+            element.style.border = '5px solid red'; // Visual confirmation
+          }
+          
+          // Check for Downloader box (green border)
+          if (text.includes('audio.mpg: (01 of 03)') && 
+              text.includes('downloaded first chunk') &&
+              !downloaderBox) {
+            downloaderBox = element;
+            element.style.border = '5px solid red'; // Visual confirmation
+          }
+        });
+        
+        if (uploaderBox && downloaderBox) {
+          indicator.innerHTML = 'BOXES FOUND! STARTING ANIMATION...';
+          indicator.style.background = 'green';
+          
+          // Simple animation to confirm we found the right elements
+          uploaderBox.style.transition = 'transform 1s';
+          downloaderBox.style.transition = 'transform 1s';
+          
+          setTimeout(() => {
+            uploaderBox.style.transform = 'scale(1.1)';
+            downloaderBox.style.transform = 'scale(1.1)';
+          }, 1000);
+          
+          setTimeout(() => {
+            uploaderBox.style.transform = 'scale(1)';
+            downloaderBox.style.transform = 'scale(1)';
+          }, 2000);
+          
+        } else {
+          indicator.innerHTML = 'BOXES NOT FOUND';
+          indicator.style.background = 'orange';
+        }
+      }, 1000);
+    });
+  });
+});
+</script>
+
+
 
 
 
