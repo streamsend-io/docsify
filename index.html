@@ -686,5 +686,94 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+<!-- Add this diagnostic code to see the actual HTML structure -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  window.$docsify = window.$docsify || {};
+  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
+    hook.doneEach(function() {
+      if (vm.route.path !== '/' && vm.route.path !== '/overview') return;
+      
+      console.log('=== HTML STRUCTURE ANALYSIS ===');
+      
+      // Find the target paragraph
+      const paragraphs = document.querySelectorAll('p');
+      let targetParagraph = null;
+      
+      for (let p of paragraphs) {
+        if (p.textContent.includes('A Streamsend file-chunk pipeline is a fancy way')) {
+          targetParagraph = p;
+          console.log('Found target paragraph');
+          break;
+        }
+      }
+      
+      if (!targetParagraph) {
+        console.log('Target paragraph not found');
+        return;
+      }
+      
+      // Analyze what comes after the paragraph
+      let element = targetParagraph.nextElementSibling;
+      let count = 0;
+      
+      console.log('Elements after the paragraph:');
+      while (element && count < 10) {
+        console.log(`${count + 1}. Tag: ${element.tagName}`);
+        console.log(`   Classes: ${element.className}`);
+        console.log(`   ID: ${element.id}`);
+        console.log(`   Text preview: ${element.textContent.substring(0, 50)}...`);
+        console.log(`   HTML preview: ${element.outerHTML.substring(0, 100)}...`);
+        console.log('   ---');
+        
+        element = element.nextElementSibling;
+        count++;
+      }
+      
+      // Look for any divs with specific classes
+      console.log('Looking for boxes/containers:');
+      const allDivs = document.querySelectorAll('div');
+      allDivs.forEach(div => {
+        if (div.textContent.includes('Uploader') || div.textContent.includes('Downloader')) {
+          console.log('Found potential box:');
+          console.log('  Classes:', div.className);
+          console.log('  Text:', div.textContent.substring(0, 50));
+          console.log('  Parent:', div.parentElement.tagName, div.parentElement.className);
+        }
+      });
+      
+      // Look for code blocks anywhere on the page
+      console.log('All PRE elements on page:');
+      const allPre = document.querySelectorAll('pre');
+      console.log('Found', allPre.length, 'pre elements');
+      allPre.forEach((pre, i) => {
+        console.log(`PRE ${i}: ${pre.textContent.substring(0, 30)}...`);
+      });
+      
+      // Look for highlighted code
+      console.log('All CODE elements on page:');
+      const allCode = document.querySelectorAll('code');
+      console.log('Found', allCode.length, 'code elements');
+      
+      // Check if using a specific syntax highlighter
+      console.log('Checking for syntax highlighter:');
+      console.log('Prism loaded?', typeof Prism !== 'undefined');
+      console.log('hljs loaded?', typeof hljs !== 'undefined');
+      
+      console.log('=== END STRUCTURE ANALYSIS ===');
+    });
+  });
+});
+</script>
+
+
+
+
+
+
+
+
 </body>
 </html>
