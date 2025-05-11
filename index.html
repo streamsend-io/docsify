@@ -347,6 +347,7 @@
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
+
 <!-- Add this to your index.html file, just before the closing </body> tag -->
 
 <style>
@@ -394,40 +395,33 @@
   window.$docsify = window.$docsify || {};
   window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
     hook.doneEach(function() {
-      console.log('Animation script running...');
+      console.log('Checking page for animation...');
       
-      // Only run on the specific page
-      if (!window.location.hash.includes('what-does-a-streamsend-file-chunk-pipeline-do')) {
+      // Only run on the overview page
+      const path = vm.route.path;
+      if (path !== '/' && path !== '/overview' && !path.includes('overview')) {
         return;
       }
       
-      // Find the target header
-      const headers = document.querySelectorAll('h2');
-      let targetHeader = null;
+      // Find the paragraph that starts with "A Streamsend file-chunk pipeline"
+      const paragraphs = document.querySelectorAll('p');
+      let targetParagraph = null;
       
-      for (let header of headers) {
-        if (header.textContent.includes('What does a Streamsend file-chunk pipeline do?')) {
-          targetHeader = header;
-          console.log('Found target header!');
+      for (let p of paragraphs) {
+        if (p.textContent.includes('A Streamsend file-chunk pipeline is a fancy way')) {
+          targetParagraph = p;
+          console.log('Found target paragraph!');
           break;
         }
       }
       
-      if (!targetHeader) return;
-      
-      // Find the paragraph after the header
-      let paragraph = targetHeader.nextElementSibling;
-      while (paragraph && paragraph.tagName !== 'P') {
-        paragraph = paragraph.nextElementSibling;
-      }
-      
-      if (!paragraph || paragraph.dataset.animated === 'true') return;
+      if (!targetParagraph || targetParagraph.dataset.animated === 'true') return;
       
       // Mark as animated to prevent re-animation
-      paragraph.dataset.animated = 'true';
+      targetParagraph.dataset.animated = 'true';
       
       // Store original content
-      const originalText = paragraph.textContent;
+      const originalText = targetParagraph.textContent;
       
       // Typing animation function
       function typeText(element, text, callback, speed = 20) {
@@ -480,46 +474,60 @@
         typeLine();
       }
       
-      // Start animation sequence
-      paragraph.style.opacity = '0';
+      // Start animation sequence after a short delay
       setTimeout(() => {
-        paragraph.style.opacity = '1';
-        typeText(paragraph, originalText, function() {
-          // Find and animate the code blocks
-          const codeBlocks = document.querySelectorAll('pre');
-          
-          if (codeBlocks.length >= 2) {
-            // First code block (Uploader)
-            const uploaderBlock = codeBlocks[0];
-            uploaderBlock.style.opacity = '0';
-            uploaderBlock.classList.add('animating');
+        console.log('Starting animation sequence...');
+        
+        targetParagraph.style.opacity = '0';
+        setTimeout(() => {
+          targetParagraph.style.opacity = '1';
+          typeText(targetParagraph, originalText, function() {
+            // Find code blocks that come after the paragraph
+            let nextElement = targetParagraph.nextElementSibling;
+            const codeBlocks = [];
             
-            setTimeout(() => {
-              uploaderBlock.style.opacity = '1';
-              uploaderBlock.classList.add('slide-in-left');
+            // Collect the next two pre/code blocks
+            while (nextElement && codeBlocks.length < 2) {
+              if (nextElement.tagName === 'PRE') {
+                codeBlocks.push(nextElement);
+              }
+              nextElement = nextElement.nextElementSibling;
+            }
+            
+            if (codeBlocks.length >= 2) {
+              // First code block (Uploader)
+              const uploaderBlock = codeBlocks[0];
+              uploaderBlock.style.opacity = '0';
+              uploaderBlock.classList.add('animating');
               
-              typeCodeBlock(uploaderBlock, function() {
-                // Second code block (Downloader)
-                const downloaderBlock = codeBlocks[1];
-                downloaderBlock.style.opacity = '0';
-                downloaderBlock.classList.add('animating');
+              setTimeout(() => {
+                uploaderBlock.style.opacity = '1';
+                uploaderBlock.classList.add('slide-in-left');
                 
-                setTimeout(() => {
-                  downloaderBlock.style.opacity = '1';
-                  downloaderBlock.classList.add('slide-in-right');
+                typeCodeBlock(uploaderBlock, function() {
+                  // Second code block (Downloader)
+                  const downloaderBlock = codeBlocks[1];
+                  downloaderBlock.style.opacity = '0';
+                  downloaderBlock.classList.add('animating');
                   
-                  typeCodeBlock(downloaderBlock, function() {
-                    console.log('Animation complete!');
-                  });
-                }, 300);
-              });
-            }, 300);
-          }
-        });
-      }, 300);
+                  setTimeout(() => {
+                    downloaderBlock.style.opacity = '1';
+                    downloaderBlock.classList.add('slide-in-right');
+                    
+                    typeCodeBlock(downloaderBlock, function() {
+                      console.log('Animation complete!');
+                    });
+                  }, 300);
+                });
+              }, 300);
+            }
+          });
+        }, 300);
+      }, 1000); // Wait 1 second after page load before starting animation
     });
   });
 </script>
+
 
 </body>
 </html>

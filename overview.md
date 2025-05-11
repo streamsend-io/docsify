@@ -4,7 +4,7 @@
 
 Stream files (any content, any size) using a Kafka Cluster.
 
-## What does a Streamsend file-chunk pipeline do?
+What does a Streamsend file-chunk pipeline do?
 
 A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to end with Uploaders producing messages and Downloaders consuming messages using the same topic.
 
