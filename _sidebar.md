@@ -1,38 +1,25 @@
-<!-- docs/_sidebar.md -->
-
-* [Overview](/overview.md)
-* [Why Stream Files](/why-send-files.md)
-
+* [Home](/)
+* [Quick Start](quickstart.md)
 * **Getting Started**
-  * [Installation](/getting-started/installation.md)
-  * [Compatibility](/getting-started/compatibility.md)
-  * [Quickstart for macOS](/getting-started/quickstart-macos.md)
-  * [Quickstart for Kubernetes](/getting-started/quickstart-kubernetes.md)
-
-* **Core Concepts**
-  * [File Chunks](/concepts/file-chunks.md)
-  * [Delivery Guarantees](/concepts/delivery-guarantees.md)
-  * [File Integrity](/concepts/file-integrity.md)
-  * [Partitions](/concepts/partitions.md)
-  * [Tasks](/concepts/tasks.md)
-  * [Replay](/concepts/replay.md)
-
+  * [Overview](getting-started.md)
+  * [Downloads](downloads.md)
+* **Core Components**
+  * [Architecture](architecture.md)
+  * [Uploader](uploader.md)
+  * [Downloader](downloader.md)
 * **Configuration**
-  * [Uploader Configuration](/configuration/uploader.md)
-  * [Downloader Configuration](/configuration/downloader.md)
-
-* **Deployment**
-  * [Docker](/docker.md)
-
-* **Additional Information**
-  * [Release Notes](/releasenotes.md)
-  * [Limitations](/limitations.md)
-  * [Encryption](/encryption.md)
-  * [Payloads](/payloads.md)
-  * [Troubleshooting](/troubleshooting.md)
-
-* **Help & Support**
-  * [Support](/support.md)
-  * [License](/license.md)
-  * [Privacy Policy](/privacypolicy.md)
-  * [Contact](/contacts.md)
+  * [Uploader Config](uploader-config.md)
+  * [Downloader Config](downloader-config.md)
+  * [Example Configs](example-configs.md)
+* **Operations**
+  * [Monitoring](monitoring.md)
+  * [Performance Tuning](performance.md)
+  * [Troubleshooting](troubleshooting.md)
+* **Reference**
+  * [Chunk Format](chunk-format.md)
+  * [Message Headers](message-headers.md)
+  * [Metrics Reference](metrics-reference.md)
+* **Resources**
+  * [FAQ](faq.md)
+  * [Changelog](changelog.md)
+  * [Support](support.md)
