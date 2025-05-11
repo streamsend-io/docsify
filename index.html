@@ -347,7 +347,7 @@
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
- <!-- Add this to your index.html file, just before the closing </body> tag -->
+<!-- Add this to your index.html file, just before the closing </body> tag -->
 
 <style>
   /* Animation styles */
@@ -381,6 +381,11 @@
   @keyframes slideInRight {
     from { transform: translateX(20px); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
+  }
+  
+  /* Style for code blocks during animation */
+  pre.animating code {
+    display: inline-block;
   }
 </style>
 
@@ -425,7 +430,8 @@
       const originalText = paragraph.textContent;
       
       // Typing animation function
-      function typeText(element, text, callback) {
+      function typeText(element, text, callback, speed = 20) {
+        const originalContent = element.innerHTML;
         element.textContent = '';
         element.classList.add('typing-animation');
         let index = 0;
@@ -434,33 +440,86 @@
           if (index < text.length) {
             element.textContent += text[index];
             index++;
-            setTimeout(typeChar, 20);
-          } else if (callback) {
-            setTimeout(callback, 300);
+            setTimeout(typeChar, speed);
+          } else {
+            element.innerHTML = originalContent; // Restore HTML formatting
+            if (callback) setTimeout(callback, 300);
           }
         }
         
         typeChar();
       }
       
-      // Start animation
+      // Type lines in code blocks
+      function typeCodeBlock(codeBlock, callback) {
+        const code = codeBlock.querySelector('code');
+        if (!code) return callback && callback();
+        
+        const lines = code.textContent.split('\n').filter(line => line.trim());
+        code.textContent = '';
+        code.style.display = 'block';
+        
+        let lineIndex = 0;
+        
+        function typeLine() {
+          if (lineIndex < lines.length) {
+            const line = lines[lineIndex];
+            const lineElement = document.createElement('div');
+            lineElement.style.minHeight = '1.2em';
+            code.appendChild(lineElement);
+            
+            typeText(lineElement, line, function() {
+              lineIndex++;
+              typeLine();
+            }, 15); // Faster typing for code
+          } else if (callback) {
+            callback();
+          }
+        }
+        
+        typeLine();
+      }
+      
+      // Start animation sequence
       paragraph.style.opacity = '0';
       setTimeout(() => {
         paragraph.style.opacity = '1';
         typeText(paragraph, originalText, function() {
-          // Animate the diagram elements
+          // Find and animate the code blocks
           const codeBlocks = document.querySelectorAll('pre');
-          codeBlocks.forEach((block, index) => {
-            block.style.opacity = '0';
+          
+          if (codeBlocks.length >= 2) {
+            // First code block (Uploader)
+            const uploaderBlock = codeBlocks[0];
+            uploaderBlock.style.opacity = '0';
+            uploaderBlock.classList.add('animating');
+            
             setTimeout(() => {
-              block.style.opacity = '1';
-              block.classList.add(index === 0 ? 'slide-in-left' : 'slide-in-right');
-            }, 300 + index * 300);
-          });
+              uploaderBlock.style.opacity = '1';
+              uploaderBlock.classList.add('slide-in-left');
+              
+              typeCodeBlock(uploaderBlock, function() {
+                // Second code block (Downloader)
+                const downloaderBlock = codeBlocks[1];
+                downloaderBlock.style.opacity = '0';
+                downloaderBlock.classList.add('animating');
+                
+                setTimeout(() => {
+                  downloaderBlock.style.opacity = '1';
+                  downloaderBlock.classList.add('slide-in-right');
+                  
+                  typeCodeBlock(downloaderBlock, function() {
+                    console.log('Animation complete!');
+                  });
+                }, 300);
+              });
+            }, 300);
+          }
         });
       }, 300);
     });
   });
-</script> 
+</script>
+
 </body>
 </html>
