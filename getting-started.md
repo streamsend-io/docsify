@@ -89,20 +89,7 @@ docker run -v $(pwd)/config:/config -v $(pwd)/files:/files streamsend/uploader:l
 docker run -v $(pwd)/config:/config -v $(pwd)/files:/files streamsend/downloader:latest
 ```
 
-## Building from Source
 
-Clone the repository:
-```bash
-git clone https://github.com/streamsend-io/file-chunk.git
-cd file-chunk/rust-src
-```
-
-Build with Cargo:
-```bash
-cargo build --release
-```
-
-The binaries will be available in `target/release/`.
 
 ## Compatibility
 
