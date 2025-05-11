@@ -2,8 +2,18 @@
 window.$docsify = window.$docsify || {};
 window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
   hook.doneEach(function() {
-    // Only run on the overview page
-    if (vm.route.path !== '/overview') return;
+    // Check if we're on the overview page or the root with the specific section
+    const currentPath = vm.route.path;
+    const currentHash = window.location.hash;
+    
+    console.log('Current path:', currentPath, 'Current hash:', currentHash);
+    
+    // Run on overview page or when the specific section is in view
+    const isOverviewPage = currentPath === '/overview' || 
+                          currentPath === '/' || 
+                          currentHash.includes('what-does-a-streamsend-file-chunk-pipeline-do');
+    
+    if (!isOverviewPage) return;
     
     // Find the section by looking for the h2 with the specific text
     const headers = document.querySelectorAll('h2');
@@ -12,11 +22,15 @@ window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook
     for (let header of headers) {
       if (header.textContent.includes('What does a Streamsend file-chunk pipeline do?')) {
         targetHeader = header;
+        console.log('Found target header:', header);
         break;
       }
     }
     
-    if (!targetHeader) return;
+    if (!targetHeader) {
+      console.log('Target header not found');
+      return;
+    }
     
     // Find the next ul element after the header
     let nextElement = targetHeader.nextElementSibling;
@@ -24,13 +38,21 @@ window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook
       nextElement = nextElement.nextElementSibling;
     }
     
-    if (!nextElement) return;
+    if (!nextElement) {
+      console.log('List not found after header');
+      return;
+    }
     
     const list = nextElement;
     const items = Array.from(list.querySelectorAll('li'));
     
+    console.log('Found list with', items.length, 'items');
+    
     // Check if animation has already been applied
-    if (list.dataset.animated === 'true') return;
+    if (list.dataset.animated === 'true') {
+      console.log('Animation already applied');
+      return;
+    }
     list.dataset.animated = 'true';
     
     // Store original content
@@ -68,6 +90,8 @@ window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook
     
     // Function to animate all items
     function animateList() {
+      console.log('Starting animation...');
+      
       // Hide all items initially
       items.forEach((item, index) => {
         item.style.opacity = '0';
@@ -94,16 +118,24 @@ window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook
       setTimeout(showNextItem, 500);
     }
     
-    // Create intersection observer to trigger animation when in view
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          animateList();
-          observer.disconnect(); // Stop observing after animation starts
-        }
-      });
-    }, { threshold: 0.2 });
-    
-    observer.observe(list);
+    // Start animation immediately if the element is already in view
+    const rect = list.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      console.log('Element in view, starting animation immediately');
+      animateList();
+    } else {
+      // Create intersection observer to trigger animation when in view
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            console.log('Element entered view, starting animation');
+            animateList();
+            observer.disconnect(); // Stop observing after animation starts
+          }
+        });
+      }, { threshold: 0.2 });
+      
+      observer.observe(list);
+    }
   });
 });
