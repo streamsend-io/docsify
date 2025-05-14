@@ -285,47 +285,51 @@
     /* Custom animation styles */
     .uploader-text {
       color: #0d47a1 !important;
-      font-size: 9px !important;
-      letter-spacing: -0.3px !important;
-      line-height: 1.3 !important;
+      font-size: 8px !important;
+      letter-spacing: -0.4px !important;
+      line-height: 1.2 !important;
       font-weight: 400 !important;
+      white-space: nowrap !important;
     }
     
     .downloader-text {
       color: #1b5e20 !important;
-      font-size: 9px !important;
-      letter-spacing: -0.3px !important;
-      line-height: 1.3 !important;
+      font-size: 8px !important;
+      letter-spacing: -0.4px !important;
+      line-height: 1.2 !important;
       font-weight: 400 !important;
+      white-space: nowrap !important;
     }
     
     /* Make sure these have highest priority */
     pre.uploader-box code, 
     pre.uploader-box code div {
       color: #0d47a1 !important;
-      font-size: 9px !important;
-      letter-spacing: -0.3px !important;
+      font-size: 8px !important;
+      letter-spacing: -0.4px !important;
       padding: 0 !important;
       margin: 0 !important;
-      line-height: 1.3 !important;
+      line-height: 1.2 !important;
       font-weight: 400 !important;
+      white-space: nowrap !important;
     }
     
     pre.downloader-box code, 
     pre.downloader-box code div {
       color: #1b5e20 !important;
-      font-size: 9px !important;
-      letter-spacing: -0.3px !important;
+      font-size: 8px !important;
+      letter-spacing: -0.4px !important;
       padding: 0 !important;
       margin: 0 !important;
-      line-height: 1.3 !important;
+      line-height: 1.2 !important;
       font-weight: 400 !important;
+      white-space: nowrap !important;
     }
     
     /* Special styling for MD5 line */
     .md5-line {
-      font-size: 8px !important;
-      letter-spacing: -0.4px !important;
+      font-size: 7px !important;
+      letter-spacing: -0.5px !important;
       word-spacing: -1px !important;
     }
   </style>
@@ -828,35 +832,17 @@
           // Define specific log lines for each box (taken from your screenshot)
           const uploaderLines = [
             "chunking",
-            "audio.mpg: (01 of 03)",
-            "chunk uploaded",
-            "",
-            "audio.mpg: (02 of 03)",
-            "chunk uploaded",
-            "",
-            "audio.mpg: (03 of 03)",
-            "chunk uploaded",
-            "",
-            "audio.mpg: finished 3",
-            "chunk uploads",
-            "",
-            "audio.mpg:",
-            "MD5=4fb8086802ae70fc4ee" // This line will get special styling
+            "audio.mpg: (01 of 03) chunk uploaded",
+            "audio.mpg: (02 of 03) chunk uploaded",
+            "audio.mpg: (03 of 03) chunk uploaded",
+            "audio.mpg: finished 3 chunk uploads",
+            "audio.mpg: MD5=4fb8086802ae70fc4ee"
           ];
           
           const downloaderLines = [
-            "audio.mpg: (01 of 03)",
-            "downloaded first",
-            "chunk",
-            "",
-            "audio.mpg: (02 of 03)",
-            "consumed next chunk",
-            "(1024000 downloaded)",
-            "",
-            "audio.mpg: (03 of 03)",
-            "consumed next chunk",
-            "(2048000 downloaded)",
-            "",
+            "audio.mpg: (01 of 03) downloaded first chunk",
+            "audio.mpg: (02 of 03) consumed next chunk (1024000 downloaded)",
+            "audio.mpg: (03 of 03) consumed next chunk (2048000 downloaded)",
             "audio.mpg: Merge"
           ];
           
