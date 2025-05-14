@@ -620,23 +620,31 @@
             // Look for the existing display flex container shown in your diagnostic
             const existingBoxContainer = mainContent.querySelector('div[style*="display: flex"]');
             
-            // Create a new container if we can't find the existing one
-            let boxContainer;
-            if (existingBoxContainer && existingBoxContainer.querySelector('div[style*="border: 2px solid #4285F4"]')) {
-              console.log("Found existing flex container - replacing its content");
-              // Use the existing container
-              boxContainer = existingBoxContainer;
-              boxContainer.innerHTML = '';
+            // Always create a new container to ensure consistent layout
+            const boxContainer = document.createElement('div');
+            boxContainer.id = 'streamsend-animation-container';  // Unique ID to help future lookups
+            boxContainer.style.display = 'flex';
+            boxContainer.style.flexDirection = 'row';  // Explicitly enforce side-by-side
+            boxContainer.style.gap = '20px';
+            boxContainer.style.justifyContent = 'center';
+            boxContainer.style.margin = '20px 0';
+            boxContainer.style.width = '100%';
+            
+            // Remove any existing animation container to prevent duplication
+            const existingAnimContainer = document.getElementById('streamsend-animation-container');
+            if (existingAnimContainer) {
+                existingAnimContainer.remove();
+            }
+            
+            // Insert the new container
+            if (existingBoxContainer && existingBoxContainer.parentNode) {
+                // Replace the existing container with our new one
+                existingBoxContainer.parentNode.replaceChild(boxContainer, existingBoxContainer);
+                console.log("Replaced existing flex container with consistent layout container");
             } else {
-              // Create a new container
-              boxContainer = document.createElement('div');
-              boxContainer.style.display = 'flex';
-              boxContainer.style.gap = '20px';
-              boxContainer.style.justifyContent = 'center';
-              boxContainer.style.margin = '20px 0';
-              
-              // Insert after the target paragraph
-              targetElement.insertAdjacentElement('afterend', boxContainer);
+                // Insert after the target paragraph
+                targetElement.insertAdjacentElement('afterend', boxContainer);
+                console.log("Inserted new consistent layout container");
             }
             
             // Add containers for each box
@@ -917,14 +925,41 @@
       const animationPlugin = function(hook, vm) {
         // Set animation flag to prevent re-running
         let animationRun = false;
+        let pageState = null;
         
+        // Cleanup function to remove any ongoing animations
+        function cleanup() {
+          const container = document.getElementById('streamsend-animation-container');
+          if (container) {
+            container.remove();
+          }
+          
+          // Reset animation state
+          animationRun = false;
+          pageState = null;
+        }
+        
+        // Handle navigation events
         hook.doneEach(function() {
           console.log('Docsify: Page loaded, checking for animation context');
           
-          // Only run on overview page and only once
+          // Check if we're on the overview page
           const path = vm.route.path;
-          if ((path !== '/' && path !== '/overview' && !path.includes('overview')) || animationRun) {
-            console.log('Docsify: Not running animation - wrong page or already run');
+          const isOverviewPage = path === '/' || path === '/overview' || path.includes('overview');
+          
+          // If we're not on the overview page or we've changed, clean up
+          if (!isOverviewPage || (pageState && pageState !== path)) {
+            cleanup();
+            console.log('Docsify: Not on overview page, cleaning up');
+            return;
+          }
+          
+          // Update page state
+          pageState = path;
+          
+          // Only run animation once per page load
+          if (animationRun) {
+            console.log('Docsify: Animation already running');
             return;
           }
           
@@ -937,6 +972,11 @@
             animationRun = true;
             console.log('Docsify: Animation process initiated');
           }, 1500); // Increased delay to ensure DOM is fully rendered
+        });
+        
+        // Handle page unload
+        hook.mounted(function() {
+          window.addEventListener('beforeunload', cleanup);
         });
       };
       
