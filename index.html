@@ -586,6 +586,14 @@
             uploaderBox.style.margin = '10px 0';
             uploaderBox.style.borderRadius = '5px';
             uploaderBox.style.backgroundColor = '#f8f8f8';
+            uploaderBox.style.minWidth = '300px';
+            uploaderBox.style.minHeight = '200px';
+            uploaderBox.style.flex = '1';
+            uploaderBox.style.fontFamily = 'monospace';
+            uploaderBox.style.fontSize = '14px';
+            uploaderBox.style.lineHeight = '1.5';
+            uploaderBox.style.whiteSpace = 'pre-wrap';
+            uploaderBox.style.color = '#333';
             
             // Create the downloader box
             const downloaderBox = document.createElement('pre');
@@ -595,6 +603,14 @@
             downloaderBox.style.margin = '10px 0';
             downloaderBox.style.borderRadius = '5px';
             downloaderBox.style.backgroundColor = '#f8f8f8';
+            downloaderBox.style.minWidth = '300px';
+            downloaderBox.style.minHeight = '200px';
+            downloaderBox.style.flex = '1';
+            downloaderBox.style.fontFamily = 'monospace';
+            downloaderBox.style.fontSize = '14px';
+            downloaderBox.style.lineHeight = '1.5';
+            downloaderBox.style.whiteSpace = 'pre-wrap';
+            downloaderBox.style.color = '#333';
             
             // Find where to insert them (after the paragraph about streamsend file-chunk pipeline)
             let targetElement = null;
@@ -615,9 +631,35 @@
               console.log("Using fallback target for insertion");
             }
             
-            // Insert the boxes
-            targetElement.insertAdjacentElement('afterend', uploaderBox);
-            uploaderBox.insertAdjacentElement('afterend', downloaderBox);
+            // Look for the existing display flex container shown in your diagnostic
+            const existingBoxContainer = mainContent.querySelector('div[style*="display: flex"]');
+            
+            if (existingBoxContainer) {
+              console.log("Found existing flex container - replacing its content");
+              // Replace the content of the existing container
+              existingBoxContainer.innerHTML = '';
+              existingBoxContainer.appendChild(uploaderBox);
+              existingBoxContainer.appendChild(downloaderBox);
+            } else {
+              // Create a new container if necessary
+              const boxContainer = document.createElement('div');
+              boxContainer.style.display = 'flex';
+              boxContainer.style.gap = '20px';
+              boxContainer.style.margin = '20px 0';
+              boxContainer.appendChild(uploaderBox);
+              boxContainer.appendChild(downloaderBox);
+              
+              // Insert after the target paragraph
+              targetElement.insertAdjacentElement('afterend', boxContainer);
+            }
+            
+            // Make absolutely sure these are visible
+            uploaderBox.style.zIndex = '1000';
+            downloaderBox.style.zIndex = '1000';
+            uploaderBox.style.position = 'relative';
+            downloaderBox.style.position = 'relative';
+            uploaderBox.style.display = 'block';
+            downloaderBox.style.display = 'block';
             
             console.log("Created and inserted boxes:", uploaderBox, downloaderBox);
             
@@ -729,7 +771,21 @@
               const line = uploaderLines[lineIndex];
               const lineDiv = document.createElement('div');
               lineDiv.textContent = line;
+              
+              // Add styling for animation
+              lineDiv.style.padding = '3px';
+              lineDiv.style.transition = 'all 0.3s ease';
+              lineDiv.style.backgroundColor = '#e6f7ff';  // Light blue background
+              lineDiv.style.borderLeft = '3px solid blue';
+              
               uploaderCode.appendChild(lineDiv);
+              
+              // Highlight effect
+              setTimeout(() => {
+                lineDiv.style.backgroundColor = 'transparent';
+                lineDiv.style.borderLeft = '3px solid transparent';
+              }, 300);
+              
               lineIndex++;
               setTimeout(animateUploaderLine, 400); // 400ms between lines
             } else {
@@ -745,7 +801,21 @@
               const line = downloaderLines[lineIndex];
               const lineDiv = document.createElement('div');
               lineDiv.textContent = line;
+              
+              // Add styling for animation
+              lineDiv.style.padding = '3px';
+              lineDiv.style.transition = 'all 0.3s ease';
+              lineDiv.style.backgroundColor = '#e6ffed';  // Light green background
+              lineDiv.style.borderLeft = '3px solid green';
+              
               downloaderCode.appendChild(lineDiv);
+              
+              // Highlight effect
+              setTimeout(() => {
+                lineDiv.style.backgroundColor = 'transparent';
+                lineDiv.style.borderLeft = '3px solid transparent';
+              }, 300);
+              
               lineIndex++;
               setTimeout(animateDownloaderLine, 400); // 400ms between lines
             } else {
