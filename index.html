@@ -437,20 +437,65 @@
         findBoxes: function() {
           console.log('Searching for boxes based on content...');
           
-          // Look for pre elements with specific content
-          const allPre = document.querySelectorAll('pre');
+          // First try to find by div with class names or headings
+          const uploader = document.querySelector('div.uploader, div:contains("Uploader")');
+          const downloader = document.querySelector('div.downloader, div:contains("Downloader")');
+          
+          if (uploader && downloader) {
+            console.log('Found boxes by heading/class');
+            return { uploaderBox: uploader, downloaderBox: downloader };
+          }
+          
+          // Second approach: Look for the boxes by content
+          // Based on your screenshot, try all possible containers
+          const allElements = document.querySelectorAll('div, pre, code');
           let uploaderBox = null;
           let downloaderBox = null;
           
-          for (const pre of allPre) {
-            const text = pre.textContent || '';
+          // Output all found elements for debugging
+          console.log('All potential elements:', allElements.length);
+          
+          for (const el of allElements) {
+            const text = el.textContent || '';
+            console.log('Checking element:', el.tagName, text.substring(0, 30));
             
-            if (text.includes('audio.mpg') && text.includes('starting chunking')) {
-              uploaderBox = pre;
-              console.log('Found uploader box', pre);
-            } else if (text.includes('audio.mpg') && text.includes('downloaded first chunk')) {
-              downloaderBox = pre;
-              console.log('Found downloader box', pre);
+            // For each element, check if it contains our target text
+            if (text.includes('audio.mpg') && (text.includes('chunking') || text.includes('chunk uploaded'))) {
+              uploaderBox = el;
+              console.log('Found uploader box', el.tagName, el.className);
+            } else if (text.includes('audio.mpg') && (text.includes('downloaded first') || text.includes('consumed next chunk'))) {
+              downloaderBox = el;
+              console.log('Found downloader box', el.tagName, el.className);
+            }
+          }
+          
+          // If we found both or either one
+          if (uploaderBox || downloaderBox) {
+            console.log('At least one box found');
+            // For any box found directly as code element, get its parent pre
+            if (uploaderBox && uploaderBox.tagName === 'CODE') {
+              uploaderBox = uploaderBox.closest('pre');
+            }
+            if (downloaderBox && downloaderBox.tagName === 'CODE') {
+              downloaderBox = downloaderBox.closest('pre');
+            }
+          }
+          
+          // Last resort - look for specific containers on the page
+          if (!uploaderBox || !downloaderBox) {
+            console.log('Using visual identification');
+            // The elements in your screenshot have border colors and contain this text
+            const allDivs = document.querySelectorAll('div');
+            for (const div of allDivs) {
+              const compStyle = window.getComputedStyle(div);
+              const borderColor = compStyle.borderColor || '';
+              
+              // Looking for blue border (uploader) and green border (downloader)
+              if (borderColor.includes('blue') || div.style.border.includes('blue')) {
+                uploaderBox = div;
+              } else if (borderColor.includes('green') || div.style.border.includes('green')) {
+                downloaderBox = div;
+              }
             }
           }
           
