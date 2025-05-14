@@ -433,161 +433,242 @@
           typeLine();
         },
         
-        // Find the uploader/downloader boxes based on content
-        findBoxes: function() {
-          console.log('Searching for boxes based on content...');
+        // Special diagnostic function to help us understand what's on the page
+        diagnosePageStructure: function() {
+          console.log("=== DETAILED PAGE STRUCTURE DIAGNOSIS ===");
           
-          // Direct approach: Looking specifically for the pre elements with the log content
-          // This will check for exact text matches from your screenshot
-          const allPreElements = document.querySelectorAll('pre');
-          let uploaderBox = null;
-          let downloaderBox = null;
+          // 1. Check all elements with 'pre' tag name
+          const allPresByTagName = document.getElementsByTagName('pre');
+          console.log(`1. getElementsByTagName('pre') found: ${allPresByTagName.length} elements`);
           
-          // Debugging: Print all pre elements found
-          console.log(`Found ${allPreElements.length} pre elements`);
-          allPreElements.forEach((pre, i) => {
-            console.log(`PRE ${i}: ${pre.textContent.substring(0, 50)}...`);
+          // 2. Check all elements with pre using querySelector
+          const allPresByQuery = document.querySelectorAll('pre');
+          console.log(`2. querySelectorAll('pre') found: ${allPresByQuery.length} elements`);
+          
+          // 3. Check if maybe elements are in an iframe
+          const iframes = document.querySelectorAll('iframe');
+          console.log(`3. Found ${iframes.length} iframes on the page`);
+          
+          // 4. Look for elements with specific class names that might be styled like pre
+          const codeBlocks = document.querySelectorAll('.code, code, .pre, [class*="code"], [class*="syntax"]');
+          console.log(`4. Found ${codeBlocks.length} potential code blocks by class`);
+          if (codeBlocks.length > 0) {
+            Array.from(codeBlocks).slice(0, 5).forEach((el, i) => {
+              console.log(`   Block ${i}: ${el.tagName}, classes: ${el.className}, text: ${el.textContent.substring(0, 50)}`);
+            });
+          }
+          
+          // 5. Look for the Uploader/Downloader text anywhere on the page
+          console.log("5. Searching for text 'Uploader' or 'Downloader' or 'audio.mpg' in any element:");
+          const allElements = document.querySelectorAll('*');
+          let foundUploaderText = false;
+          let foundDownloaderText = false;
+          let foundAudioText = false;
+          let elementsWithTargetText = [];
+          
+          allElements.forEach(el => {
+            const text = el.textContent || '';
+            if (text.includes('Uploader')) {
+              foundUploaderText = true;
+              elementsWithTargetText.push({element: el, text: 'Uploader'});
+            }
+            if (text.includes('Downloader')) {
+              foundDownloaderText = true;
+              elementsWithTargetText.push({element: el, text: 'Downloader'});
+            }
+            if (text.includes('audio.mpg')) {
+              foundAudioText = true;
+              elementsWithTargetText.push({element: el, text: 'audio.mpg'});
+            }
           });
           
-          // Find the pre elements with the specific log content
-          for (const pre of allPreElements) {
-            const content = pre.textContent || '';
-            
-            if (content.includes("audio.mpg: (01 of 03)") && 
-                content.includes("chunk uploaded")) {
-              uploaderBox = pre;
-              console.log("Found uploader by exact content match!", pre);
-            }
-            
-            if (content.includes("audio.mpg: (01 of 03)") && 
-                content.includes("downloaded first chunk")) {
-              downloaderBox = pre;
-              console.log("Found downloader by exact content match!", pre);
-            }
-          }
+          console.log(`   Found 'Uploader' text: ${foundUploaderText}`);
+          console.log(`   Found 'Downloader' text: ${foundDownloaderText}`);
+          console.log(`   Found 'audio.mpg' text: ${foundAudioText}`);
           
-          if (uploaderBox && downloaderBox) {
-            console.log("Found both boxes by exact content match!");
-            return { uploaderBox, downloaderBox };
-          }
+          console.log("6. Elements with target text (first 5):");
+          elementsWithTargetText.slice(0, 5).forEach((item, i) => {
+            console.log(`   Element ${i}: ${item.element.tagName}, classes: ${item.element.className}, contains: ${item.text}`);
+          });
           
-          // Fallback: Try to find the boxes based on visually distinctive elements from the screenshot
-          // These might be the specific blue/green bordered elements
-          console.log("Trying to find boxes by visual distinctiveness...");
-          const allElements = document.querySelectorAll('*');
+          // 7. Check for shadow DOM which might be hiding elements
+          console.log("7. Checking for Shadow DOM:");
+          const shadowHosts = Array.from(document.querySelectorAll('*')).filter(el => el.shadowRoot);
+          console.log(`   Found ${shadowHosts.length} shadow DOM hosts`);
           
-          // Reset boxes first
-          uploaderBox = null;
-          downloaderBox = null;
-          
-          // Look for specific box titles or box styling
-          for (const el of allElements) {
-            // Check for heading elements with Uploader/Downloader text
-            if (el.tagName && ['H1','H2','H3','H4','H5','H6'].includes(el.tagName)) {
-              if (el.textContent.trim() === 'Uploader') {
-                uploaderBox = el.nextElementSibling || el.parentElement;
-                console.log("Found uploader by heading title", uploaderBox);
+          // 8. Check which DOM elements contain the log content
+          console.log("8. Searching DOM tree for log content lines:");
+          const contentLines = ['chunking', 'audio.mpg', 'chunk uploaded', 'downloaded first'];
+          contentLines.forEach(line => {
+            let foundElements = [];
+            allElements.forEach(el => {
+              if ((el.textContent || '').includes(line)) {
+                foundElements.push(el);
               }
-              if (el.textContent.trim() === 'Downloader') {
-                downloaderBox = el.nextElementSibling || el.parentElement;
-                console.log("Found downloader by heading title", downloaderBox);
-              }
+            });
+            console.log(`   Line "${line}" found in ${foundElements.length} elements`);
+            if (foundElements.length > 0) {
+              const firstElement = foundElements[0];
+              console.log(`   First element: ${firstElement.tagName}, id: ${firstElement.id}, class: ${firstElement.className}`);
             }
-            
-            // Also check for elements with blue/green styling (as shown in screenshot)
-            try {
+          });
+          
+          // 9. Check if maybe the elements are in the DOM but hidden
+          console.log("9. Checking for elements with log content that might be hidden:");
+          const hiddenElements = Array.from(allElements).filter(el => {
+            const text = el.textContent || '';
+            if (text.includes('chunking') || text.includes('audio.mpg')) {
               const style = window.getComputedStyle(el);
-              // Check both border-color and background-color
-              const hasBlueStyle = 
-                style.borderColor.includes('rgb(0, 0, 255)') || 
-                style.borderColor.includes('#00f') ||
-                style.borderColor.includes('blue') ||
-                style.backgroundColor.includes('rgb(0, 0, 255)') ||
-                style.backgroundColor.includes('#00f') ||
-                style.backgroundColor.includes('blue');
-                
-              const hasGreenStyle = 
-                style.borderColor.includes('rgb(0, 128, 0)') || 
-                style.borderColor.includes('#008000') ||
-                style.borderColor.includes('green') ||
-                style.backgroundColor.includes('rgb(0, 128, 0)') ||
-                style.backgroundColor.includes('#008000') ||
-                style.backgroundColor.includes('green');
-              
-              if (hasBlueStyle && !uploaderBox) {
-                uploaderBox = el;
-                console.log("Found uploader by blue styling", el);
-              }
-              if (hasGreenStyle && !downloaderBox) {
-                downloaderBox = el;
-                console.log("Found downloader by green styling", el);
-              }
-            } catch (e) {
-              // Ignore cross-origin style errors
+              return style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0;
             }
-          }
+            return false;
+          });
+          console.log(`   Found ${hiddenElements.length} hidden elements with log content`);
           
-          if (uploaderBox && downloaderBox) {
-            console.log("Found both boxes by visual distinctiveness");
-            return { uploaderBox, downloaderBox };
-          }
-          
-          // Last resort: Just target the boxes from your screenshot directly
-          // Looking at your screenshot, they appear to be the only pre elements in the main content area
-          console.log("Final attempt: Trying to find pre elements in the main content area");
-          
-          // Find the main content area first
+          // 10. Print the HTML structure of the main content area
+          console.log("10. HTML structure of main content area:");
           const mainContent = document.querySelector('.content') || 
                              document.querySelector('main') || 
                              document.querySelector('.markdown-section') ||
                              document.querySelector('#main');
           
           if (mainContent) {
-            // Find pre elements within the main content
-            const preInMain = mainContent.querySelectorAll('pre');
-            console.log(`Found ${preInMain.length} pre elements in main content`);
-            
-            if (preInMain.length >= 2) {
-              // The first two pre elements in the main content are likely our targets
-              uploaderBox = preInMain[0];
-              downloaderBox = preInMain[1];
-              console.log("Using first two pre elements in main content", uploaderBox, downloaderBox);
-            }
+            console.log(`   Main content found: ${mainContent.tagName}, id: ${mainContent.id}, class: ${mainContent.className}`);
+            console.log(`   Main content children: ${mainContent.children.length}`);
+            console.log(`   Main content HTML: ${mainContent.innerHTML.substring(0, 1000)}...`);
           } else {
-            // If we can't find the main content, just use the first two pre elements in the document
-            console.log("Main content not found, using first two pre elements");
-            if (allPreElements.length >= 2) {
-              uploaderBox = allPreElements[0];
-              downloaderBox = allPreElements[1];
-              console.log("Using first two pre elements in document", uploaderBox, downloaderBox);
-            }
+            console.log("   Main content element not found");
           }
           
-          return { uploaderBox, downloaderBox };
+          console.log("=== END DIAGNOSIS ===");
+          
+          // Return a structure that might be useful for debugging
+          return {
+            preElements: allPresByTagName.length,
+            codeElements: codeBlocks.length,
+            foundUploaderText,
+            foundDownloaderText,
+            foundAudioText,
+            mainContentFound: !!mainContent
+          };
         },
         
         // Main animation function
         animateBoxes: function() {
           console.log('Animation: Starting box search & animation');
           
-          // Clear any previous animation state
-          const allPre = document.querySelectorAll('pre');
-          allPre.forEach(pre => {
-            pre.classList.remove('animating', 'slide-in-left', 'slide-in-right');
-            pre.style.opacity = '';
-            pre.style.transform = '';
-          });
+          // Run diagnostics first to understand the page structure
+          const diagnosticInfo = this.diagnosePageStructure();
           
-          // Find the boxes based on content
-          const { uploaderBox, downloaderBox } = this.findBoxes();
+          // Check if we need to create our own elements
+          if (!diagnosticInfo.preElements && diagnosticInfo.mainContentFound) {
+            // We need to create our own elements since they don't exist
+            console.log("No pre elements found - need to create our own elements");
+            
+            // Find the main content area
+            const mainContent = document.querySelector('.content') || 
+                               document.querySelector('main') || 
+                               document.querySelector('.markdown-section') ||
+                               document.querySelector('#main');
+            
+            if (!mainContent) {
+              console.error("Failed to locate main content area for element creation");
+              return;
+            }
+            
+            console.log("Located main content area:", mainContent);
+            
+            // Create the uploader box
+            const uploaderBox = document.createElement('pre');
+            uploaderBox.className = 'uploader-box code-box';
+            uploaderBox.style.border = '2px solid blue';
+            uploaderBox.style.padding = '10px';
+            uploaderBox.style.margin = '10px 0';
+            uploaderBox.style.borderRadius = '5px';
+            uploaderBox.style.backgroundColor = '#f8f8f8';
+            
+            // Create the downloader box
+            const downloaderBox = document.createElement('pre');
+            downloaderBox.className = 'downloader-box code-box';
+            downloaderBox.style.border = '2px solid green';
+            downloaderBox.style.padding = '10px';
+            downloaderBox.style.margin = '10px 0';
+            downloaderBox.style.borderRadius = '5px';
+            downloaderBox.style.backgroundColor = '#f8f8f8';
+            
+            // Find where to insert them (after the paragraph about streamsend file-chunk pipeline)
+            let targetElement = null;
+            
+            // Try to find the target paragraph
+            const paragraphs = mainContent.querySelectorAll('p');
+            paragraphs.forEach(p => {
+              if (p.textContent.includes('fancy way') || 
+                  p.textContent.includes('file-chunk pipeline')) {
+                targetElement = p;
+                console.log("Found target paragraph for insertion:", p.textContent.substring(0, 50));
+              }
+            });
+            
+            if (!targetElement) {
+              // If we can't find the specific paragraph, just append to main content
+              targetElement = mainContent.lastElementChild || mainContent;
+              console.log("Using fallback target for insertion");
+            }
+            
+            // Insert the boxes
+            targetElement.insertAdjacentElement('afterend', uploaderBox);
+            uploaderBox.insertAdjacentElement('afterend', downloaderBox);
+            
+            console.log("Created and inserted boxes:", uploaderBox, downloaderBox);
+            
+            // Now animate them
+            this.animateCreatedBoxes(uploaderBox, downloaderBox);
+            return;
+          }
+          
+          // Standard animation path - try to find existing elements
+          console.log("Using standard animation path - searching for elements");
+          
+          // Find boxes based on diagnostics
+          let uploaderBox = null;
+          let downloaderBox = null;
+          
+          // Logic to find the boxes based on diagnostic results
+          if (diagnosticInfo.foundUploaderText && diagnosticInfo.foundDownloaderText) {
+            console.log("Text found - searching for containers");
+            const allElements = document.querySelectorAll('*');
+            
+            // Find divs containing the text and the closest visual containers
+            allElements.forEach(el => {
+              const text = el.textContent || '';
+              
+              if (text.includes('Uploader') && !uploaderBox) {
+                // Try to find the visual container - parent or next
+                uploaderBox = el.closest('pre') || el.nextElementSibling || el.parentElement;
+                console.log("Found potential uploader container:", uploaderBox);
+              }
+              
+              if (text.includes('Downloader') && !downloaderBox) {
+                // Try to find the visual container - parent or next
+                downloaderBox = el.closest('pre') || el.nextElementSibling || el.parentElement;
+                console.log("Found potential downloader container:", downloaderBox);
+              }
+            });
+          }
           
           if (!uploaderBox || !downloaderBox) {
-            console.log('Animation: Could not find both boxes', !!uploaderBox, !!downloaderBox);
+            console.log("Couldn't find boxes - using creation approach");
+            // Rerun with the creation approach
+            this.animateBoxes();
             return;
           }
           
           console.log('Animation: Found both boxes, proceeding with animation');
-          
+          this.animateCreatedBoxes(uploaderBox, downloaderBox);
+        },
+        
+        // Separate function to animate the boxes after they're found or created
+        animateCreatedBoxes: function(uploaderBox, downloaderBox) {
           // Store original content for each box
           const uploaderContent = uploaderBox.innerHTML;
           const downloaderContent = downloaderBox.innerHTML;
@@ -695,10 +776,12 @@
           // Wait for content to be fully rendered
           setTimeout(() => {
             console.log('Docsify: Starting animation process');
+            
+            // Run the animation
             window.streamSendAnimation.animateBoxes();
             animationRun = true;
             console.log('Docsify: Animation process initiated');
-          }, 1000);
+          }, 1500); // Increased delay to ensure DOM is fully rendered
         });
       };
       
