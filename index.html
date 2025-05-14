@@ -581,77 +581,124 @@
             // Create the uploader box
             const uploaderBox = document.createElement('pre');
             uploaderBox.className = 'uploader-box code-box';
-            uploaderBox.style.border = '2px solid blue';
+            uploaderBox.style.border = '2px solid #4285F4'; // Google blue
             uploaderBox.style.padding = '10px';
-            uploaderBox.style.margin = '10px 0';
+            uploaderBox.style.margin = '0';
             uploaderBox.style.borderRadius = '5px';
             uploaderBox.style.backgroundColor = '#f8f8f8';
-            uploaderBox.style.minWidth = '300px';
-            uploaderBox.style.minHeight = '200px';
-            uploaderBox.style.flex = '1';
-            uploaderBox.style.fontFamily = 'monospace';
-            uploaderBox.style.fontSize = '14px';
+            uploaderBox.style.width = '100%';
+            uploaderBox.style.height = '250px'; // Fixed height
+            uploaderBox.style.overflow = 'hidden'; // Don't show scrollbars
+            uploaderBox.style.fontFamily = 'SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace';
+            uploaderBox.style.fontSize = '13px';
             uploaderBox.style.lineHeight = '1.5';
-            uploaderBox.style.whiteSpace = 'pre-wrap';
+            uploaderBox.style.whiteSpace = 'pre';
             uploaderBox.style.color = '#333';
+            uploaderBox.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
             
             // Create the downloader box
             const downloaderBox = document.createElement('pre');
             downloaderBox.className = 'downloader-box code-box';
-            downloaderBox.style.border = '2px solid green';
+            downloaderBox.style.border = '2px solid #0F9D58'; // Google green
             downloaderBox.style.padding = '10px';
-            downloaderBox.style.margin = '10px 0';
+            downloaderBox.style.margin = '0';
             downloaderBox.style.borderRadius = '5px';
             downloaderBox.style.backgroundColor = '#f8f8f8';
-            downloaderBox.style.minWidth = '300px';
-            downloaderBox.style.minHeight = '200px';
-            downloaderBox.style.flex = '1';
-            downloaderBox.style.fontFamily = 'monospace';
-            downloaderBox.style.fontSize = '14px';
+            downloaderBox.style.width = '100%';
+            downloaderBox.style.height = '250px'; // Fixed height
+            downloaderBox.style.overflow = 'hidden'; // Don't show scrollbars
+            downloaderBox.style.fontFamily = 'SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace';
+            downloaderBox.style.fontSize = '13px';
             downloaderBox.style.lineHeight = '1.5';
-            downloaderBox.style.whiteSpace = 'pre-wrap';
+            downloaderBox.style.whiteSpace = 'pre';
             downloaderBox.style.color = '#333';
+            downloaderBox.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
             
             // Find where to insert them (after the paragraph about streamsend file-chunk pipeline)
             let targetElement = null;
             
-            // Try to find the target paragraph
-            const paragraphs = mainContent.querySelectorAll('p');
-            paragraphs.forEach(p => {
-              if (p.textContent.includes('fancy way') || 
-                  p.textContent.includes('file-chunk pipeline')) {
-                targetElement = p;
-                console.log("Found target paragraph for insertion:", p.textContent.substring(0, 50));
-              }
-            });
-            
-            if (!targetElement) {
-              // If we can't find the specific paragraph, just append to main content
-              targetElement = mainContent.lastElementChild || mainContent;
-              console.log("Using fallback target for insertion");
-            }
-            
             // Look for the existing display flex container shown in your diagnostic
             const existingBoxContainer = mainContent.querySelector('div[style*="display: flex"]');
             
-            if (existingBoxContainer) {
+            // Create a new container if we can't find the existing one
+            let boxContainer;
+            if (existingBoxContainer && existingBoxContainer.querySelector('div[style*="border: 2px solid #4285F4"]')) {
               console.log("Found existing flex container - replacing its content");
-              // Replace the content of the existing container
-              existingBoxContainer.innerHTML = '';
-              existingBoxContainer.appendChild(uploaderBox);
-              existingBoxContainer.appendChild(downloaderBox);
+              // Use the existing container
+              boxContainer = existingBoxContainer;
+              boxContainer.innerHTML = '';
             } else {
-              // Create a new container if necessary
-              const boxContainer = document.createElement('div');
+              // Create a new container
+              boxContainer = document.createElement('div');
               boxContainer.style.display = 'flex';
               boxContainer.style.gap = '20px';
+              boxContainer.style.justifyContent = 'center';
               boxContainer.style.margin = '20px 0';
-              boxContainer.appendChild(uploaderBox);
-              boxContainer.appendChild(downloaderBox);
               
               // Insert after the target paragraph
               targetElement.insertAdjacentElement('afterend', boxContainer);
             }
+            
+            // Add containers for each box
+            const uploaderContainer = document.createElement('div');
+            uploaderContainer.style.flex = '1';
+            uploaderContainer.style.display = 'flex';
+            uploaderContainer.style.flexDirection = 'column';
+            
+            const downloaderContainer = document.createElement('div');
+            downloaderContainer.style.flex = '1';
+            downloaderContainer.style.display = 'flex';
+            downloaderContainer.style.flexDirection = 'column';
+            
+            // Add titles
+            const uploaderTitle = document.createElement('div');
+            uploaderTitle.textContent = 'Uploader';
+            uploaderTitle.style.fontWeight = 'bold';
+            uploaderTitle.style.marginBottom = '5px';
+            uploaderTitle.style.color = '#4285F4';
+            uploaderTitle.style.textAlign = 'center';
+            
+            const downloaderTitle = document.createElement('div');
+            downloaderTitle.textContent = 'Downloader';
+            downloaderTitle.style.fontWeight = 'bold';
+            downloaderTitle.style.marginBottom = '5px';
+            downloaderTitle.style.color = '#0F9D58';
+            downloaderTitle.style.textAlign = 'center';
+            
+            // Append titles to containers
+            uploaderContainer.appendChild(uploaderTitle);
+            downloaderContainer.appendChild(downloaderTitle);
+            
+            // Append boxes to their containers
+            uploaderContainer.appendChild(uploaderBox);
+            downloaderContainer.appendChild(downloaderBox);
+            
+            // Create arrow element to visually show data flow
+            const arrowContainer = document.createElement('div');
+            arrowContainer.style.display = 'flex';
+            arrowContainer.style.alignItems = 'center';
+            arrowContainer.style.justifyContent = 'center';
+            arrowContainer.style.width = '40px';
+            
+            const arrow = document.createElement('div');
+            arrow.innerHTML = '→';
+            arrow.style.fontSize = '24px';
+            arrow.style.color = '#888';
+            arrowContainer.appendChild(arrow);
+            
+            // Add a Kafka topic label
+            const topicLabel = document.createElement('div');
+            topicLabel.textContent = 'Kafka Topic';
+            topicLabel.style.fontSize = '10px';
+            topicLabel.style.color = '#888';
+            topicLabel.style.marginTop = '5px';
+            topicLabel.style.textAlign = 'center';
+            arrowContainer.appendChild(topicLabel);
+            
+            // Assemble the layout
+            boxContainer.appendChild(uploaderContainer);
+            boxContainer.appendChild(arrowContainer);
+            boxContainer.appendChild(downloaderContainer);
             
             // Make absolutely sure these are visible
             uploaderBox.style.zIndex = '1000';
@@ -715,116 +762,154 @@
           const uploaderContent = uploaderBox.innerHTML;
           const downloaderContent = downloaderBox.innerHTML;
           
-          // Clear content first
-          uploaderBox.innerHTML = '';
-          downloaderBox.innerHTML = '';
+          // Configuration for animation
+          const config = {
+            lineTiming: 400,           // ms between adding lines (tunable)
+            initialDelay: 800,         // ms before animation starts
+            pauseBetweenAnimations: 5000, // ms to pause before restarting animation
+            staggerDelay: 3            // How many uploader lines to add before downloader starts
+          };
           
-          // Prepare boxes for animation
-          uploaderBox.style.opacity = '1';
-          uploaderBox.classList.add('animating', 'slide-in-left');
-          
-          downloaderBox.style.opacity = '1';
-          downloaderBox.classList.add('animating', 'slide-in-right');
-          
-          // Create the code elements manually
-          const uploaderCode = document.createElement('code');
-          uploaderBox.appendChild(uploaderCode);
-          
-          const downloaderCode = document.createElement('code');
-          downloaderBox.appendChild(downloaderCode);
-          
-          // Define specific log lines we want to animate (taken from your screenshot)
+          // Define specific log lines for each box (taken from your screenshot)
           const uploaderLines = [
-            "Uploader",
             "chunking",
             "audio.mpg: (01 of 03)",
             "chunk uploaded",
+            "",
             "audio.mpg: (02 of 03)",
             "chunk uploaded",
+            "",
             "audio.mpg: (03 of 03)",
             "chunk uploaded",
+            "",
             "audio.mpg: finished 3",
             "chunk uploads",
+            "",
             "audio.mpg:",
             "MD5=4fb8086802ae70fc4ee"
           ];
           
           const downloaderLines = [
-            "Downloader",
             "audio.mpg: (01 of 03)",
             "downloaded first",
             "chunk",
+            "",
             "audio.mpg: (02 of 03)",
             "consumed next chunk",
             "(1024000 downloaded)",
+            "",
             "audio.mpg: (03 of 03)",
             "consumed next chunk",
             "(2048000 downloaded)",
+            "",
             "audio.mpg: Merge"
           ];
           
-          // Animate uploader first
-          let lineIndex = 0;
+          // Animation state
+          let uploaderIndex = 0;
+          let downloaderIndex = 0;
+          let animationRunning = false;
           
-          const animateUploaderLine = () => {
-            if (lineIndex < uploaderLines.length) {
-              const line = uploaderLines[lineIndex];
-              const lineDiv = document.createElement('div');
-              lineDiv.textContent = line;
+          // Function to start the animation sequence
+          const startAnimation = () => {
+            // Only start if not already running
+            if (animationRunning) return;
+            
+            // Reset state
+            animationRunning = true;
+            uploaderIndex = 0;
+            downloaderIndex = 0;
+            
+            // Clear content to start fresh
+            const uploaderCode = document.createElement('code');
+            const downloaderCode = document.createElement('code');
+            
+            uploaderBox.innerHTML = '';
+            downloaderBox.innerHTML = '';
+            
+            uploaderBox.appendChild(uploaderCode);
+            downloaderBox.appendChild(downloaderCode);
+            
+            console.log("Starting animation sequence");
+            
+            // Start the animation after a short delay
+            setTimeout(runAnimation, config.initialDelay);
+            
+            // Main animation function that gets called repeatedly
+            function runAnimation() {
+              // If all lines are added, reset and restart after pause
+              if (uploaderIndex >= uploaderLines.length && 
+                  downloaderIndex >= downloaderLines.length) {
+                console.log("Animation complete - pausing before restart");
+                animationRunning = false;
+                
+                // Restart after pause
+                setTimeout(startAnimation, config.pauseBetweenAnimations);
+                return;
+              }
               
-              // Add styling for animation
-              lineDiv.style.padding = '3px';
-              lineDiv.style.transition = 'all 0.3s ease';
-              lineDiv.style.backgroundColor = '#e6f7ff';  // Light blue background
-              lineDiv.style.borderLeft = '3px solid blue';
+              // Add a line to uploader if we have more
+              if (uploaderIndex < uploaderLines.length) {
+                const line = uploaderLines[uploaderIndex];
+                const lineDiv = document.createElement('div');
+                lineDiv.textContent = line;
+                
+                // Add styling for animation
+                lineDiv.style.padding = '2px 0';
+                lineDiv.style.transition = 'all 0.3s ease';
+                
+                // Add highlight effect for non-empty lines
+                if (line.trim() !== '') {
+                  lineDiv.style.backgroundColor = '#e6f7ff';  // Light blue background
+                  lineDiv.style.borderLeft = '3px solid #4285F4';
+                  lineDiv.style.paddingLeft = '5px';
+                  
+                  // Fade out highlight
+                  setTimeout(() => {
+                    lineDiv.style.backgroundColor = 'transparent';
+                    lineDiv.style.borderLeft = '3px solid transparent';
+                  }, 300);
+                }
+                
+                uploaderCode.appendChild(lineDiv);
+                uploaderIndex++;
+              }
               
-              uploaderCode.appendChild(lineDiv);
+              // Add a line to downloader if we've added enough uploader lines
+              if (downloaderIndex < downloaderLines.length && 
+                  uploaderIndex > config.staggerDelay) {
+                const line = downloaderLines[downloaderIndex];
+                const lineDiv = document.createElement('div');
+                lineDiv.textContent = line;
+                
+                // Add styling for animation
+                lineDiv.style.padding = '2px 0';
+                lineDiv.style.transition = 'all 0.3s ease';
+                
+                // Add highlight effect for non-empty lines
+                if (line.trim() !== '') {
+                  lineDiv.style.backgroundColor = '#e6ffed';  // Light green background
+                  lineDiv.style.borderLeft = '3px solid #0F9D58';
+                  lineDiv.style.paddingLeft = '5px';
+                  
+                  // Fade out highlight
+                  setTimeout(() => {
+                    lineDiv.style.backgroundColor = 'transparent';
+                    lineDiv.style.borderLeft = '3px solid transparent';
+                  }, 300);
+                }
+                
+                downloaderCode.appendChild(lineDiv);
+                downloaderIndex++;
+              }
               
-              // Highlight effect
-              setTimeout(() => {
-                lineDiv.style.backgroundColor = 'transparent';
-                lineDiv.style.borderLeft = '3px solid transparent';
-              }, 300);
-              
-              lineIndex++;
-              setTimeout(animateUploaderLine, 400); // 400ms between lines
-            } else {
-              // When uploader animation complete, start downloader
-              console.log('Animation: Uploader animation complete');
-              lineIndex = 0;
-              setTimeout(animateDownloaderLine, 500);
+              // Schedule next animation step
+              setTimeout(runAnimation, config.lineTiming);
             }
           };
           
-          const animateDownloaderLine = () => {
-            if (lineIndex < downloaderLines.length) {
-              const line = downloaderLines[lineIndex];
-              const lineDiv = document.createElement('div');
-              lineDiv.textContent = line;
-              
-              // Add styling for animation
-              lineDiv.style.padding = '3px';
-              lineDiv.style.transition = 'all 0.3s ease';
-              lineDiv.style.backgroundColor = '#e6ffed';  // Light green background
-              lineDiv.style.borderLeft = '3px solid green';
-              
-              downloaderCode.appendChild(lineDiv);
-              
-              // Highlight effect
-              setTimeout(() => {
-                lineDiv.style.backgroundColor = 'transparent';
-                lineDiv.style.borderLeft = '3px solid transparent';
-              }, 300);
-              
-              lineIndex++;
-              setTimeout(animateDownloaderLine, 400); // 400ms between lines
-            } else {
-              console.log('Animation: All animations complete!');
-            }
-          };
-          
-          // Start the animation sequence
-          setTimeout(animateUploaderLine, 500);
+          // Start the animation
+          startAnimation();
         },
       };
       
