@@ -437,41 +437,58 @@
         findBoxes: function() {
           console.log('Searching for boxes based on content...');
           
-          // First try to find by div with class names or headings
-          const uploader = document.querySelector('div.uploader, div:contains("Uploader")');
-          const downloader = document.querySelector('div.downloader, div:contains("Downloader")');
+          // First approach: Look for elements with uploader/downloader class
+          let uploaderBox = document.querySelector('div.uploader');
+          let downloaderBox = document.querySelector('div.downloader');
           
-          if (uploader && downloader) {
-            console.log('Found boxes by heading/class');
-            return { uploaderBox: uploader, downloaderBox: downloader };
+          if (uploaderBox && downloaderBox) {
+            console.log('Found boxes by class names');
+            return { uploaderBox, downloaderBox };
           }
           
-          // Second approach: Look for the boxes by content
-          // Based on your screenshot, try all possible containers
-          const allElements = document.querySelectorAll('div, pre, code');
-          let uploaderBox = null;
-          let downloaderBox = null;
+          // Second approach: Look for elements with headings
+          const allHeaders = document.querySelectorAll('h1, h2, h3, h4, h5, h6, div');
+          for (const header of allHeaders) {
+            const text = header.textContent || '';
+            if (text.includes('Uploader') && !uploaderBox) {
+              uploaderBox = header.closest('div') || header;
+              console.log('Found uploader by heading', uploaderBox);
+            } else if (text.includes('Downloader') && !downloaderBox) {
+              downloaderBox = header.closest('div') || header;
+              console.log('Found downloader by heading', downloaderBox);
+            }
+          }
           
-          // Output all found elements for debugging
-          console.log('All potential elements:', allElements.length);
+          if (uploaderBox && downloaderBox) {
+            console.log('Found boxes by headings');
+            return { uploaderBox, downloaderBox };
+          }
+          
+          // Third approach: Look for the specific content we can see in screenshot
+          // Based on your screenshot, try all possible containers
+          console.log('Looking for boxes by content...');
+          const allElements = document.querySelectorAll('div, pre, code');
+          
+          // Reset box variables as they might have partial finds from above
+          uploaderBox = null;
+          downloaderBox = null;
           
           for (const el of allElements) {
             const text = el.textContent || '';
-            console.log('Checking element:', el.tagName, text.substring(0, 30));
             
             // For each element, check if it contains our target text
             if (text.includes('audio.mpg') && (text.includes('chunking') || text.includes('chunk uploaded'))) {
               uploaderBox = el;
-              console.log('Found uploader box', el.tagName, el.className);
+              console.log('Found uploader box by content', el.tagName, text.substring(0, 30));
             } else if (text.includes('audio.mpg') && (text.includes('downloaded first') || text.includes('consumed next chunk'))) {
               downloaderBox = el;
-              console.log('Found downloader box', el.tagName, el.className);
+              console.log('Found downloader box by content', el.tagName, text.substring(0, 30));
             }
           }
           
           // If we found both or either one
           if (uploaderBox || downloaderBox) {
-            console.log('At least one box found');
+            console.log('At least one box found by content');
             // For any box found directly as code element, get its parent pre
             if (uploaderBox && uploaderBox.tagName === 'CODE') {
               uploaderBox = uploaderBox.closest('pre');
@@ -479,23 +496,51 @@
             if (downloaderBox && downloaderBox.tagName === 'CODE') {
               downloaderBox = downloaderBox.closest('pre');
             }
+            return { uploaderBox, downloaderBox };
           }
           
-          // Last resort - look for specific containers on the page
-          if (!uploaderBox || !downloaderBox) {
-            console.log('Using visual identification');
-            // The elements in your screenshot have border colors and contain this text
-            const allDivs = document.querySelectorAll('div');
-            for (const div of allDivs) {
-              const compStyle = window.getComputedStyle(div);
-              const borderColor = compStyle.borderColor || '';
+          // Last resort - look for visual features
+          console.log('Looking for boxes by visual features...');
+          const allDivs = document.querySelectorAll('div');
+          for (const div of allDivs) {
+            // Try to get computed style, but handle security errors that might occur
+            try {
+              const style = window.getComputedStyle(div);
+              const border = style.border || '';
+              const borderColor = style.borderColor || '';
+              const className = div.className || '';
               
-              // Looking for blue border (uploader) and green border (downloader)
-              if (borderColor.includes('blue') || div.style.border.includes('blue')) {
+              // Check several properties that might indicate this is our target
+              if (
+                  (border.includes('blue') || borderColor.includes('blue') || 
+                   className.includes('uploader') || className.includes('blue')) &&
+                  !uploaderBox
+              ) {
                 uploaderBox = div;
-              } else if (borderColor.includes('green') || div.style.border.includes('green')) {
+                console.log('Found uploader by style', div);
+              } else if (
+                  (border.includes('green') || borderColor.includes('green') || 
+                   className.includes('downloader') || className.includes('green')) &&
+                  !downloaderBox
+              ) {
                 downloaderBox = div;
+                console.log('Found downloader by style', div);
               }
+            } catch (e) {
+              // Ignore cross-origin style errors
+            }
+          }
+          
+          // Final approach: just grab the pre elements directly from the page
+          // This is very specific to the structure we see in the screenshot
+          if (!uploaderBox || !downloaderBox) {
+            console.log('Trying last resort method - direct selectors');
+            const preElements = document.querySelectorAll('pre');
+            if (preElements.length >= 2) {
+              // Just grab the first two pre elements in the document
+              uploaderBox = preElements[0]; 
+              downloaderBox = preElements[1];
+              console.log('Taking first two pre elements as fallback');
             }
           }
           
