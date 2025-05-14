@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/docsify/themes/vue.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
-  <!-- Your existing head content -->
   <style>
     :root {
       --primary-color: #3498db;
@@ -283,6 +282,37 @@
       color: #f07178;
     }
   </style>
+  
+  <!-- Animation styles -->
+  <style>
+    .slide-in-left {
+      animation: slideInLeft 0.5s ease-out forwards;
+    }
+    
+    .slide-in-right {
+      animation: slideInRight 0.5s ease-out forwards;
+    }
+    
+    @keyframes slideInLeft {
+      from { transform: translateX(-20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideInRight {
+      from { transform: translateX(20px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    pre.animating code {
+      display: block;
+    }
+    
+    pre.animating code > div {
+      min-height: 1.2em;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+  </style>
 </head>
 <body>
   <div id="app"></div>
@@ -348,515 +378,165 @@
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-json.min.js"></script>
 
-<!-- Add this to your index.html file, just before the closing </body> tag -->
-
-<style>
-  /* Animation styles */
-  .typing-animation {
-    overflow: hidden;
-    white-space: normal;
-  }
-  
-  .fade-in {
-    animation: fadeIn 0.5s ease-in;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  .slide-in-left {
-    animation: slideInLeft 0.5s ease-out;
-  }
-  
-  .slide-in-right {
-    animation: slideInRight 0.5s ease-out;
-  }
-  
-  @keyframes slideInLeft {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  @keyframes slideInRight {
-    from { transform: translateX(20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  /* Style for code blocks during animation */
-  pre.animating code {
-    display: inline-block;
-  }
-</style>
-
-
-
-
-
-
-
-
-
-<!-- Add this to your index.html file, just before the closing </body> tag -->
-
-<style>
-  /* Animation styles */
-  .slide-in-left {
-    animation: slideInLeft 0.5s ease-out;
-  }
-  
-  .slide-in-right {
-    animation: slideInRight 0.5s ease-out;
-  }
-  
-  @keyframes slideInLeft {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  @keyframes slideInRight {
-    from { transform: translateX(20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  /* Hide code block content initially */
-  pre.animating code {
-    visibility: visible !important;
-  }
-  
-  pre.animating code > div {
-    min-height: 1.2em;
-  }
-</style>
-<!-- Replace the animation code in your index.html with this fixed version -->
-
-<style>
-  /* Animation styles */
-  .slide-in-left {
-    animation: slideInLeft 0.5s ease-out forwards;
-  }
-  
-  .slide-in-right {
-    animation: slideInRight 0.5s ease-out forwards;
-  }
-  
-  @keyframes slideInLeft {
-    from { transform: translateX(-20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  @keyframes slideInRight {
-    from { transform: translateX(20px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  pre.animating code {
-    display: block;
-  }
-  
-  pre.animating code > div {
-    min-height: 1.2em;
-    font-family: monospace;
-  }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Define animation functions in a broader scope
-  window.streamSendAnimation = {
-    typeText: function(element, text, callback, speed = 20) {
-      element.textContent = '';
-      let index = 0;
-      
-      function typeChar() {
-        if (index < text.length) {
-          element.textContent += text[index];
-          index++;
-          setTimeout(typeChar, speed);
-        } else if (callback) {
-          setTimeout(callback, 300);
-        }
-      }
-      
-      typeChar();
-    },
-    
-    typeCodeBlock: function(codeBlock, callback) {
-      const code = codeBlock.querySelector('code');
-      if (!code) {
-        if (callback) callback();
-        return;
-      }
-      
-      const lines = code.textContent.split('\n').filter(line => line.trim());
-      code.textContent = '';
-      code.style.display = 'block';
-      
-      let lineIndex = 0;
-      
-      function typeLine() {
-        if (lineIndex < lines.length) {
-          const line = lines[lineIndex];
-          const lineElement = document.createElement('div');
-          lineElement.style.minHeight = '1.2em';
-          lineElement.style.fontFamily = 'monospace';
-          code.appendChild(lineElement);
+  <!-- Animation script -->
+  <script>
+    (function() {
+      // Store our animation functions in the global space to avoid scope issues
+      window.streamSendAnimation = {
+        typeText: function(element, text, callback, speed = 20) {
+          element.textContent = '';
+          let index = 0;
           
-          window.streamSendAnimation.typeText(lineElement, line, function() {
-            lineIndex++;
-            typeLine();
-          }, 30);
-        } else if (callback) {
-          callback();
-        }
-      }
-      
-      typeLine();
-    }
-  };
-
-  window.$docsify = window.$docsify || {};
-  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
-    hook.doneEach(function() {
-      console.log('Checking page for animation...');
-      
-      // Only run on the overview page
-      const path = vm.route.path;
-      if (path !== '/' && path !== '/overview' && !path.includes('overview')) {
-        console.log('Not on overview page, skipping');
-        return;
-      }
-      
-      // Find the paragraph that starts with "A Streamsend file-chunk pipeline"
-      const paragraphs = document.querySelectorAll('p');
-      let targetParagraph = null;
-      
-      for (let p of paragraphs) {
-        if (p.textContent.includes('A Streamsend file-chunk pipeline is a fancy way')) {
-          targetParagraph = p;
-          console.log('Found target paragraph!');
-          break;
-        }
-      }
-      
-      if (!targetParagraph) {
-        console.log('Target paragraph not found');
-        return;
-      }
-      
-      // Check if already animated
-      if (targetParagraph.dataset.animated === 'true') {
-        console.log('Already animated');
-        return;
-      }
-      
-      // Mark as animated
-      targetParagraph.dataset.animated = 'true';
-      
-      // Find code blocks that come after the paragraph
-      let nextElement = targetParagraph.nextElementSibling;
-      const codeBlocks = [];
-      
-      // Collect code blocks
-      while (nextElement && codeBlocks.length < 2) {
-        if (nextElement.tagName === 'PRE') {
-          codeBlocks.push(nextElement);
-          console.log('Found code block:', codeBlocks.length);
-        }
-        nextElement = nextElement.nextElementSibling;
-      }
-      
-      if (codeBlocks.length < 2) {
-        console.log('Not enough code blocks found:', codeBlocks.length);
-        return;
-      }
-      
-      console.log('Starting animation sequence...');
-      
-      // Hide code blocks initially
-      codeBlocks.forEach(block => {
-        block.style.opacity = '0';
-        block.classList.add('animating');
-      });
-      
-      // Start animation after a short delay
-      setTimeout(() => {
-        // First code block (Uploader)
-        const uploaderBlock = codeBlocks[0];
-        uploaderBlock.style.opacity = '1';
-        uploaderBlock.classList.add('slide-in-left');
-        
-        window.streamSendAnimation.typeCodeBlock(uploaderBlock, function() {
-          console.log('Uploader animation complete');
-          
-          // Second code block (Downloader)
-          const downloaderBlock = codeBlocks[1];
-          
-          setTimeout(() => {
-            downloaderBlock.style.opacity = '1';
-            downloaderBlock.classList.add('slide-in-right');
-            
-            window.streamSendAnimation.typeCodeBlock(downloaderBlock, function() {
-              console.log('Downloader animation complete');
-              console.log('All animations complete!');
-            });
-          }, 500);
-        });
-      }, 1000);
-    });
-  });
-});
-</script>
-
-
-
-<!-- Add this diagnostic script to temporarily debug the issue -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  window.$docsify = window.$docsify || {};
-  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
-    hook.doneEach(function() {
-      console.log('=== DIAGNOSTIC START ===');
-      console.log('1. Current path:', vm.route.path);
-      console.log('2. Current hash:', window.location.hash);
-      console.log('3. Page title:', document.title);
-      
-      // Check all paragraphs
-      const paragraphs = document.querySelectorAll('p');
-      console.log('4. Found', paragraphs.length, 'paragraphs');
-      paragraphs.forEach((p, i) => {
-        if (p.textContent.includes('Streamsend file-chunk pipeline')) {
-          console.log(`   - Paragraph ${i} contains target text:`, p.textContent.substring(0, 100) + '...');
-          console.log('   - Has data-animated:', p.dataset.animated);
-          console.log('   - Parent element:', p.parentElement.tagName, p.parentElement.className);
-        }
-      });
-      
-      // Check all code blocks
-      const codeBlocks = document.querySelectorAll('pre');
-      console.log('5. Found', codeBlocks.length, 'code blocks');
-      codeBlocks.forEach((pre, i) => {
-        console.log(`   - Code block ${i}:`);
-        console.log('     - Classes:', pre.className);
-        console.log('     - Has data-animated:', pre.dataset.animated);
-        console.log('     - First 50 chars:', pre.textContent.substring(0, 50) + '...');
-        console.log('     - Has code child:', !!pre.querySelector('code'));
-        console.log('     - Style opacity:', pre.style.opacity);
-        console.log('     - Style transform:', pre.style.transform);
-      });
-      
-      // Check if animation script exists
-      console.log('6. Animation functions check:');
-      console.log('   - typeText function exists:', typeof typeText !== 'undefined');
-      console.log('   - typeCodeBlock function exists:', typeof typeCodeBlock !== 'undefined');
-      
-      // Check timing
-      console.log('7. Page timing:');
-      console.log('   - Document ready state:', document.readyState);
-      console.log('   - Time since navigation:', performance.now());
-      
-      // Check for animation styles
-      console.log('8. Animation styles check:');
-      const styles = document.styleSheets;
-      let foundAnimationStyles = false;
-      for (let i = 0; i < styles.length; i++) {
-        try {
-          const rules = styles[i].cssRules || styles[i].rules;
-          for (let j = 0; j < rules.length; j++) {
-            if (rules[j].selectorText && (rules[j].selectorText.includes('slide-in') || rules[j].selectorText.includes('typing'))) {
-              foundAnimationStyles = true;
-              console.log('   - Found animation style:', rules[j].selectorText);
+          function typeChar() {
+            if (index < text.length) {
+              element.textContent += text[index];
+              index++;
+              setTimeout(typeChar, speed);
+            } else if (callback) {
+              setTimeout(callback, 300);
             }
           }
-        } catch (e) {
-          // Ignore cross-origin stylesheets
-        }
-      }
-      console.log('   - Animation styles found:', foundAnimationStyles);
-      
-      console.log('=== DIAGNOSTIC END ===');
-    });
-  });
-});
-</script>
-
-
-
-
-
-
-<!-- Add this diagnostic code to see the actual HTML structure -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  window.$docsify = window.$docsify || {};
-  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
-    hook.doneEach(function() {
-      if (vm.route.path !== '/' && vm.route.path !== '/overview') return;
-      
-      console.log('=== HTML STRUCTURE ANALYSIS ===');
-      
-      // Find the target paragraph
-      const paragraphs = document.querySelectorAll('p');
-      let targetParagraph = null;
-      
-      for (let p of paragraphs) {
-        if (p.textContent.includes('A Streamsend file-chunk pipeline is a fancy way')) {
-          targetParagraph = p;
-          console.log('Found target paragraph');
-          break;
-        }
-      }
-      
-      if (!targetParagraph) {
-        console.log('Target paragraph not found');
-        return;
-      }
-      
-      // Analyze what comes after the paragraph
-      let element = targetParagraph.nextElementSibling;
-      let count = 0;
-      
-      console.log('Elements after the paragraph:');
-      while (element && count < 10) {
-        console.log(`${count + 1}. Tag: ${element.tagName}`);
-        console.log(`   Classes: ${element.className}`);
-        console.log(`   ID: ${element.id}`);
-        console.log(`   Text preview: ${element.textContent.substring(0, 50)}...`);
-        console.log(`   HTML preview: ${element.outerHTML.substring(0, 100)}...`);
-        console.log('   ---');
-        
-        element = element.nextElementSibling;
-        count++;
-      }
-      
-      // Look for any divs with specific classes
-      console.log('Looking for boxes/containers:');
-      const allDivs = document.querySelectorAll('div');
-      allDivs.forEach(div => {
-        if (div.textContent.includes('Uploader') || div.textContent.includes('Downloader')) {
-          console.log('Found potential box:');
-          console.log('  Classes:', div.className);
-          console.log('  Text:', div.textContent.substring(0, 50));
-          console.log('  Parent:', div.parentElement.tagName, div.parentElement.className);
-        }
-      });
-      
-      // Look for code blocks anywhere on the page
-      console.log('All PRE elements on page:');
-      const allPre = document.querySelectorAll('pre');
-      console.log('Found', allPre.length, 'pre elements');
-      allPre.forEach((pre, i) => {
-        console.log(`PRE ${i}: ${pre.textContent.substring(0, 30)}...`);
-      });
-      
-      // Look for highlighted code
-      console.log('All CODE elements on page:');
-      const allCode = document.querySelectorAll('code');
-      console.log('Found', allCode.length, 'code elements');
-      
-      // Check if using a specific syntax highlighter
-      console.log('Checking for syntax highlighter:');
-      console.log('Prism loaded?', typeof Prism !== 'undefined');
-      console.log('hljs loaded?', typeof hljs !== 'undefined');
-      
-      console.log('=== END STRUCTURE ANALYSIS ===');
-    });
-  });
-});
-</script>
-
-
-
-<!-- Replace your animation code with this visual test -->
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  window.$docsify = window.$docsify || {};
-  window.$docsify.plugins = [].concat(window.$docsify.plugins || [], function(hook, vm) {
-    hook.doneEach(function() {
-      // Only run on overview page
-      if (vm.route.path !== '/' && vm.route.path !== '/overview') return;
-      
-      // Add visual indicator
-      const indicator = document.createElement('div');
-      indicator.innerHTML = 'ANIMATION SCRIPT LOADED';
-      indicator.style.position = 'fixed';
-      indicator.style.top = '10px';
-      indicator.style.right = '10px';
-      indicator.style.background = 'red';
-      indicator.style.color = 'white';
-      indicator.style.padding = '10px';
-      indicator.style.zIndex = '9999';
-      document.body.appendChild(indicator);
-      
-      // Find elements with text content
-      setTimeout(() => {
-        indicator.innerHTML = 'SEARCHING FOR BOXES...';
-        
-        // Look for the actual box elements based on your screenshot
-        // They appear to be divs with blue/green borders
-        const allElements = document.querySelectorAll('*');
-        let uploaderBox = null;
-        let downloaderBox = null;
-        
-        allElements.forEach(element => {
-          const text = element.textContent;
-          const style = window.getComputedStyle(element);
           
-          // Check for Uploader box (blue border)
-          if (text.includes('audio.mpg: 2200000 bytes') && 
-              text.includes('starting chunking') &&
-              !uploaderBox) {
-            uploaderBox = element;
-            element.style.border = '5px solid red'; // Visual confirmation
+          typeChar();
+        },
+        
+        typeCodeBlock: function(codeBlock, callback) {
+          const code = codeBlock.querySelector('code');
+          if (!code) {
+            if (callback) callback();
+            return;
           }
           
-          // Check for Downloader box (green border)
-          if (text.includes('audio.mpg: (01 of 03)') && 
-              text.includes('downloaded first chunk') &&
-              !downloaderBox) {
-            downloaderBox = element;
-            element.style.border = '5px solid red'; // Visual confirmation
+          const lines = code.textContent.split('\n').filter(line => line.trim());
+          code.textContent = '';
+          code.style.display = 'block';
+          
+          let lineIndex = 0;
+          
+          function typeLine() {
+            if (lineIndex < lines.length) {
+              const line = lines[lineIndex];
+              const lineElement = document.createElement('div');
+              lineElement.style.minHeight = '1.2em';
+              lineElement.style.fontFamily = 'monospace';
+              code.appendChild(lineElement);
+              
+              window.streamSendAnimation.typeText(lineElement, line, function() {
+                lineIndex++;
+                typeLine();
+              }, 30);
+            } else if (callback) {
+              callback();
+            }
           }
-        });
+          
+          typeLine();
+        },
         
-        if (uploaderBox && downloaderBox) {
-          indicator.innerHTML = 'BOXES FOUND! STARTING ANIMATION...';
-          indicator.style.background = 'green';
+        // Find the uploader/downloader boxes based on content
+        findBoxes: function() {
+          console.log('Searching for boxes based on content...');
           
-          // Simple animation to confirm we found the right elements
-          uploaderBox.style.transition = 'transform 1s';
-          downloaderBox.style.transition = 'transform 1s';
+          // Look for pre elements with specific content
+          const allPre = document.querySelectorAll('pre');
+          let uploaderBox = null;
+          let downloaderBox = null;
           
+          for (const pre of allPre) {
+            const text = pre.textContent || '';
+            
+            if (text.includes('audio.mpg') && text.includes('starting chunking')) {
+              uploaderBox = pre;
+              console.log('Found uploader box', pre);
+            } else if (text.includes('audio.mpg') && text.includes('downloaded first chunk')) {
+              downloaderBox = pre;
+              console.log('Found downloader box', pre);
+            }
+          }
+          
+          return { uploaderBox, downloaderBox };
+        },
+        
+        // Main animation function
+        animateBoxes: function() {
+          console.log('Animation: Starting box search & animation');
+          
+          // Clear any previous animation state
+          const allPre = document.querySelectorAll('pre');
+          allPre.forEach(pre => {
+            pre.classList.remove('animating', 'slide-in-left', 'slide-in-right');
+            pre.style.opacity = '';
+            pre.style.transform = '';
+          });
+          
+          // Find the boxes based on content
+          const { uploaderBox, downloaderBox } = this.findBoxes();
+          
+          if (!uploaderBox || !downloaderBox) {
+            console.log('Animation: Could not find both boxes', !!uploaderBox, !!downloaderBox);
+            return;
+          }
+          
+          console.log('Animation: Found both boxes, proceeding with animation');
+          
+          // Prepare boxes for animation
+          uploaderBox.style.opacity = '0';
+          uploaderBox.classList.add('animating');
+          
+          downloaderBox.style.opacity = '0';
+          downloaderBox.classList.add('animating');
+          
+          // Start animation sequence
           setTimeout(() => {
-            uploaderBox.style.transform = 'scale(1.1)';
-            downloaderBox.style.transform = 'scale(1.1)';
+            // Animate uploader first
+            uploaderBox.style.opacity = '1';
+            uploaderBox.classList.add('slide-in-left');
+            
+            this.typeCodeBlock(uploaderBox, () => {
+              console.log('Animation: Uploader animation complete');
+              
+              // Then animate downloader
+              setTimeout(() => {
+                downloaderBox.style.opacity = '1';
+                downloaderBox.classList.add('slide-in-right');
+                
+                this.typeCodeBlock(downloaderBox, () => {
+                  console.log('Animation: All animations complete!');
+                });
+              }, 500);
+            });
           }, 1000);
-          
-          setTimeout(() => {
-            uploaderBox.style.transform = 'scale(1)';
-            downloaderBox.style.transform = 'scale(1)';
-          }, 2000);
-          
-        } else {
-          indicator.innerHTML = 'BOXES NOT FOUND';
-          indicator.style.background = 'orange';
         }
-      }, 1000);
-    });
-  });
-});
-</script>
-
-
-
-
-
-
-
-
+      };
+      
+      // Define our single docsify plugin
+      const animationPlugin = function(hook, vm) {
+        // Set animation flag to prevent re-running
+        let animationRun = false;
+        
+        hook.doneEach(function() {
+          console.log('Docsify: Page loaded, checking for animation context');
+          
+          // Only run on overview page and only once
+          const path = vm.route.path;
+          if ((path !== '/' && path !== '/overview' && !path.includes('overview')) || animationRun) {
+            console.log('Docsify: Not running animation - wrong page or already run');
+            return;
+          }
+          
+          // Wait for content to be fully rendered
+          setTimeout(() => {
+            console.log('Docsify: Starting animation process');
+            window.streamSendAnimation.animateBoxes();
+            animationRun = true;
+            console.log('Docsify: Animation process initiated');
+          }, 1000);
+        });
+      };
+      
+      // Add the animation plugin to docsify
+      window.$docsify.plugins = [].concat(window.$docsify.plugins || [], animationPlugin);
+    })();
+  </script>
 </body>
 </html>
