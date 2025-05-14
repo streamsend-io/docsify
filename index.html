@@ -285,21 +285,25 @@
     /* Custom animation styles */
     .uploader-text {
       color: #0d47a1 !important;
+      font-size: 11px !important;
     }
     
     .downloader-text {
       color: #1b5e20 !important;
+      font-size: 11px !important;
     }
     
     /* Make sure these have highest priority */
     pre.uploader-box code, 
     pre.uploader-box code div {
       color: #0d47a1 !important;
+      font-size: 11px !important;
     }
     
     pre.downloader-box code, 
     pre.downloader-box code div {
       color: #1b5e20 !important;
+      font-size: 11px !important;
     }
   </style>
   
@@ -610,7 +614,7 @@
             uploaderBox.style.height = '250px'; // Fixed height
             uploaderBox.style.overflow = 'hidden'; // Don't show scrollbars
             uploaderBox.style.fontFamily = 'SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace';
-            uploaderBox.style.fontSize = '12px'; // Reduced from 13px
+            uploaderBox.style.fontSize = '11px'; // Reduced from 12px for no wrapping
             uploaderBox.style.lineHeight = '1.5';
             uploaderBox.style.whiteSpace = 'pre';
             uploaderBox.style.color = '#0d47a1'; // Dark blue text
@@ -628,7 +632,7 @@
             downloaderBox.style.height = '250px'; // Fixed height
             downloaderBox.style.overflow = 'hidden'; // Don't show scrollbars
             downloaderBox.style.fontFamily = 'SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace';
-            downloaderBox.style.fontSize = '12px'; // Reduced from 13px
+            downloaderBox.style.fontSize = '11px'; // Reduced from 12px for no wrapping
             downloaderBox.style.lineHeight = '1.5';
             downloaderBox.style.whiteSpace = 'pre';
             downloaderBox.style.color = '#1b5e20'; // Dark green text
