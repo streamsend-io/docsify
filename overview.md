@@ -4,11 +4,9 @@
 
 Stream files (any content, any size) using a Kafka Cluster.
 
-A Streamsend file-chunk pipeline is a fancy way to send a file - it consists of Uploader(s) and Downloader(s).
+What does a Streamsend file-chunk pipeline do?
 
-Uploaders convert files into Kafka messages
-
-Downloaders consume and merge the messages to recreate the file.
+A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to end with Uploaders producing messages and Downloaders consuming messages using the same topic.
 
 <div style="display: flex; flex-direction: column; width: 100%; max-width: 900px; margin: 20px auto; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
   <div style="display: flex; gap: 20px;">
@@ -50,41 +48,19 @@ Downloaders consume and merge the messages to recreate the file.
   </div>
 </div>
 
-
-The Uploader "chunks" the file into into evenly sized messages, sized [just] less than the Kafka Message-size limit for the cluster.
-
-```text
-
-[upl-20250515-135753-1] file-chunk-topic message.max.bytes is 1048588
-[upl-20250515-135753-1] Setting file.chunk.size.auto.adjustor=10% for auto-chunk Size mode.
-[upl-20250515-135753-1] Automatic configuration of a chunk size of 891313 (85% of message.max.bytes 1048588)
-[upl-20250515-135753-1] Streamsend Uploader successfully started on upd-20250515-135753 with thread(s)=1, topic=file-chunk-topic, partition(s)=1, Chunk Size=891313
-
-```
-
-The Uploader auto-detects the Kafka message-size limit, and the partition count, and optimizes accordingly.
-A file may be chunked into one, tens, hundreds or even thousands of chunks (the limit is 100k chunks per file).
-The Downloader consumes data produced by Uploader(s) and uses message headers to recreate the files, finishing with an MD5 check to verify file integrity.
-
-A Downloader can process incoming file streams from many Uploaders simultaneously.
-
-
-
-
-
+*The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file.*
 
 ## Why Stream Files?
 
 Sometimes it make more sense to stream a file rather than to send a file using file-send utilities (such as mv, cp, scp, ftp or curl).
 
-- Files stream as data-chunks, that fit inside the Kafka message limit for your cluster. Kafka is fast, and massively parallel: produce as many chunks as needed to stream a file of any size
+- Stream files as data-chunks, that fit inside the Kafka message limit for your cluster. Kafka is fast, and massively parallel: produce as many chunks as needed to stream a file of any size
 - The Kafka protocol uses automatic-retry to ensure that all data is sent, even when network failures occur
 - Create a Data Funnel where many Uploaders stream data to one Downloader
 - Mirror files to multiple locations via a Kafka topic by starting multiple Downloaders
-- Kafka's Flexible configuration enables strong encryption and compression
+- Flexible configuration for strong encryption and compression
 - Virtually unlimited parallel scalability for data uploaders and downloaders
 - Leverage Apache Kafka with its vibrant open source development community
-
 
 ## Key Use Cases
 
@@ -133,7 +109,6 @@ Additional features include:
 - Automatic creation of separate directories for each uploader
 - Works on local filesystems and Kubernetes persistent volumes
 
-
 ## What does a Streamsend file-chunk pipeline not do?
 
 A Streamsend file-chunk pipeline doesn't care what is actually in a file: so it cannot register (or validate) a schema; or convert or unzip contents
@@ -144,22 +119,9 @@ A Streamsend file-chunk pipeline recreates the file: it cannot be used to stream
 
 Chunking and merging require measurable elapsed time: so while this technique is tunable and potentially very fast; it is not in the realm of ultra-low latency data streaming (for high-frequency trading or any microsecond (or indeed millisecond) requirements)
 
-
 ### Limitations
 
 - Works with closed files only - no "live" streaming media, video feeds, or appending files
 - File sizes are limited by the uploader & downloader memory size
 - Local filesystems only (S3/HDFS support planned for future releases)
 - No stream processing or schema registry integration as this requires awareness of content-data
-
-
-### Is it free?
-
-Yes it is free.
-There is also a paid version available (activated using the "license.key" feature) which provides support and multi-partition operation.
-The free version does everything that the paid-version does: using one topic partition, whereas the paid version uses all partitions in the topic, enabling higher throughput.
-
-Single-partition operation is still tunable, and it is likely to be sufficiently fast for almost all scenarios.
-
-
-
