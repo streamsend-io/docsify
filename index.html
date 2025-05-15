@@ -665,12 +665,23 @@
             downloaderBox.style.color = '#1b5e20'; // Dark green text
             downloaderBox.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
             
-            // Find where to insert them (after the paragraph about streamsend file-chunk pipeline)
-            let targetElement = null;
             
-            // Look for the existing display flex container shown in your diagnostic
-            const existingBoxContainer = mainContent.querySelector('div[style*="display: flex"]');
-            
+// Find where to insert them - specifically look for an ID first
+// Look for dedicated animation target
+const targetElement = document.getElementById('streamsend-animation-target') || 
+                     // Fallback to finding a relevant heading
+                     mainContent.querySelector('h2[id*="how-it-works"]') ||
+                     mainContent.querySelector('h2') ||
+                     // Absolute fallback - just use the main content
+                     mainContent;
+
+console.log("Found target element for insertion:", targetElement);
+
+// Look for the existing display flex container shown in your diagnostic
+const existingBoxContainer = mainContent.querySelector('div[style*="display: flex"]') ||
+                             document.getElementById('streamsend-animation-container');
+
+
             // Always create a new container to ensure consistent layout
             const boxContainer = document.createElement('div');
             boxContainer.id = 'streamsend-animation-container';  // Unique ID to help future lookups
@@ -687,17 +698,21 @@
                 existingAnimContainer.remove();
             }
             
-            // Insert the new container
-            if (existingBoxContainer && existingBoxContainer.parentNode) {
-                // Replace the existing container with our new one
-                existingBoxContainer.parentNode.replaceChild(boxContainer, existingBoxContainer);
-                console.log("Replaced existing flex container with consistent layout container");
-            } else {
-                // Insert after the target paragraph
-                targetElement.insertAdjacentElement('afterend', boxContainer);
-                console.log("Inserted new consistent layout container");
-            }
             
+// Insert the new container
+if (existingBoxContainer && existingBoxContainer.parentNode) {
+    // Replace the existing container with our new one
+    existingBoxContainer.parentNode.replaceChild(boxContainer, existingBoxContainer);
+    console.log("Replaced existing flex container with consistent layout container");
+} else if (targetElement) {
+    // Use direct append to ensure it works regardless of element type
+    targetElement.appendChild(boxContainer);
+    console.log("Appended box container to target element");
+} else {
+    console.error("Could not find a suitable location to insert animation");
+}
+
+
             // Add containers for each box
             const uploaderContainer = document.createElement('div');
             uploaderContainer.style.flex = '1';
