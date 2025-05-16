@@ -12,17 +12,18 @@ Streamsend Downloader accepts configuration properties in three forms:
 The descending order of preference is Config File; then Environment Variable and then Command-line arguments.
 
 
-### files.dir
+### output.dir
 
 The directory to write merged files that have been processed, for example "/tmp/streamsend_downloader". 
-TODO: if the directory does not exist then it will be created automatically. 
 This directory must exist and be readable and writable by the user running the downloader.
-If the directory is not accessible, then then downloader exits with an error message.
+If the directory is not accessible, then then downloader exits with an error message "Failed to write to output.dir: Unable to start."
 Downloaded files are never subsequently deleted - maintenance of space for this directory must be managed externally.
-If space is exhausted in the files.dir then the downloader remains running, but pauses consumption while space is unavailable, resuming processing automatically.
-Files may be overwritten: if the Downloader is restarted without consumer offsets (in order to reprocess topic data) then downloaded files in files.dir will be over-written.
-Subdirectories walked by the uploader are recreated automatically in the Downloader files.dir before downloading the file.
-Both the Uploader and Downloader have a "files.dir" configuration property.  If co-located, "files.dir" for the uploader and downloader should point to different directories.
+If space is exhausted in the output.dir then the downloader remains running, but pauses consumption while space is unavailable, resuming processing automatically.
+While paused the downloader reports the filesystem status: for example:
+'Downloading Paused! output.dir status: 0 bytes available, 11,362,262 bytes required for "/tmp/downloaded/edge-uploader-774/DSC011721.mpg"'
+Files may be overwritten: if the Downloader is restarted without consumer offsets (in order to reprocess topic data) then downloaded files in output.dir will be over-written.
+Subdirectories walked by the uploader are recreated automatically in the Downloader output.dir before downloading the file.
+Note that the Downloader uses "output.dir" and the Uploader uses "input.dir".
 
 - *Type:* STRING
 - *Default:* 

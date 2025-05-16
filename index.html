@@ -762,7 +762,7 @@ if (existingBoxContainer && existingBoxContainer.parentNode) {
             
             // Add a Kafka topic label
             const topicLabel = document.createElement('div');
-            topicLabel.textContent = 'Kafka Topic';
+            topicLabel.textContent = 'file-chunk-topic';
             topicLabel.style.fontSize = '10px';
             topicLabel.style.color = '#888';
             topicLabel.style.marginTop = '5px';
@@ -840,7 +840,7 @@ if (existingBoxContainer && existingBoxContainer.parentNode) {
           const config = {
             lineTiming: 400,           // ms between adding lines (tunable)
             initialDelay: 800,         // ms before animation starts
-            pauseBetweenAnimations: 8000, // ms to pause before restarting animation
+            pauseBetweenAnimations: 12000, // ms to pause before restarting animation
             staggerDelay: 6            // How many uploader lines to add before downloader starts
           };
           

@@ -6,7 +6,13 @@ Stream files (any content, any size) using a Kafka Cluster.
 
 ## What does a Streamsend file-chunk pipeline do?
 
-A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to end with Uploaders producing messages and Downloaders consuming messages using the same topic.
+A Streamsend File-chunk Pipeline is a fancy way to send a file.
+
+The Uploader splits input files into chunks that fit inside a Kafka Message, producing as many messages as needed to send the entire file.
+
+The Downloader consumes the Kafka Messages and uses the message-headers to re-assemble the file, verifying integrity with an MD5 check.
+
+Any number of Uploaders and Downloaders can stream files at once using a single Kafka Topic.
 
 <div id="streamsend-animation-target" style="display: flex; flex-direction: column; width: 100%; max-width: 900px; margin: 20px auto; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
   <div style="display: flex; gap: 20px;">
@@ -41,21 +47,19 @@ A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to
 
 ## Why Stream Files?
 
-Sometimes it make more sense to stream a file rather than to send a file using file-send utilities (such as mv, cp, scp, ftp or curl).
+Sometimes it make more sense to _stream_ a file rather than to _send_ a file using file-send utilities such as mv, cp, scp, ftp or curl.
 
-- Stream files as data-chunks, that fit inside the Kafka message limit for your cluster. Kafka is fast, and massively parallel: produce as many chunks as needed to stream a file of any size
-- The Kafka protocol uses automatic-retry to ensure that all data is sent, even when network failures occur
-- Create a Data Funnel where many Uploaders stream data to one Downloader
-- Mirror files to multiple locations via a Kafka topic by starting multiple Downloaders
-- Flexible configuration for strong encryption and compression
-- Virtually unlimited parallel scalability for data uploaders and downloaders
-- Leverage Apache Kafka with its vibrant open source development community
+- _Kafka TCO_: files alongside events: files share the same data plumbing as events
+- _Robust_: the streaming protocol uses automatic-retry to ensure that all data is sent, even on unreliable networks
+- _Secure_: flexible configuration using strong encryption ciphers
+- _Efficient_: multiple built-in compression algorithms, use of zero-copy 
+- _Scalable_: virtually unlimited parallel scalability for data uploaders and downloaders
 
 ## Key Use Cases
 
 ### Files Alongside Events
 
-Use Kafka for more: now you can use the Kafka pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability.
+Use Kafka for more: now you can use the Kafka data pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability.
 
 Beneficial for event-driven industries that also send files: manufacturing, retail, automotive, airlines.
 
@@ -75,7 +79,7 @@ A streaming protocol handles network service interruptions by retrying: when con
 
 ### Low Latency
 
-An Uploader, like any Kafka producer, can send file chunks serially or in parallel, using features such as topic partitions and in-flight connections. This edition is serial, but a parallelized edition will be available soon.
+An Uploader, like any Kafka producer, can send file chunks serially or in parallel, using features such as topic partitions and in-flight connections. 
 
 ### Compression
 
