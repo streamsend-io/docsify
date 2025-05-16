@@ -1,6 +1,7 @@
 * [Home](/)
-* [Getting Started](getting-started.md)
-* [Downloads](downloads.md)
+* [Getting Started](/getting-started.md)
+* [Downloads](/downloads.md)
+* [Docker](/docker.md)
 * **Configuration**
-  * [Uploader](configuration/uploader.md)
-  * [Downloader](configuration/downloader.md)
+  * [Uploader](/configuration/uploader.md)
+  * [Downloader](/configuration/downloader.md)

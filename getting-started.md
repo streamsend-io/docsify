@@ -135,9 +135,3 @@ Planned for future releases:
 - **Network**: Bandwidth dependent on file transfer rates
 - **Storage**: No temporary storage required beyond source/destination directories
 
-## Next Steps
-
-- [Configure the Uploader](uploader-config.md)
-- [Configure the Downloader](downloader-config.md)
-- [Run the Pipeline](quickstart.md#running-the-pipeline)
-- [Monitor Performance](monitoring.md)
