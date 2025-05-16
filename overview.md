@@ -14,18 +14,12 @@ A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to
     <div style="flex: 1; border-radius: 8px; padding: 12px; height: 280px; overflow: auto; border: 2px solid #4285F4; background-color: rgba(66, 133, 244, 0.1);">
       <div style="font-weight: bold; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid rgba(0,0,0,0.1); color: #4285F4;">Uploader</div>
       <div style="font-family: monospace; font-size: 12px;">
-        <div style="color: #174EA6; padding: 3px 0;">audio.mpg: 2200000 bytes, starting chunking</div>
-        <div style="color: #174EA6; padding: 3px 0;">audio.mpg: (01 of 03) chunk uploaded</div>
-        <div style="color: #174EA6; padding: 3px 0;">audio.mpg: (02 of 03) chunk uploaded</div>
-        <div style="color: #174EA6; padding: 3px 0;">audio.mpg: (03 of 03) chunk uploaded</div>
-        <div style="color: #174EA6; padding: 3px 0;">audio.mpg: finished 3 chunk uploads</div>
-        <div style="color: #174EA6; padding: 3px 0;">audio.mpg: MD5=4fb8086802ae70fc4eef88666eb96d40</div>
       </div>
     </div>
     
     <!-- Kafka Topic Connector -->
     <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 10px; margin-top: 50px;">
-      <div style="font-size: 12px; color: #5F6368; margin-bottom: 10px;">Kafka Topic</div>
+      <div style="font-size: 12px; color: #5F6368; margin-bottom: 10px;">file-chunk-topic</div>
       <div style="height: 100px; width: 2px; background: repeating-linear-gradient(to bottom, #5F6368 0, #5F6368 5px, transparent 5px, transparent 10px);"></div>
       <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #5F6368;"></div>
     </div>
@@ -34,11 +28,6 @@ A Streamsend file-chunk pipeline is a fancy way to send a file: operating end to
     <div style="flex: 1; border-radius: 8px; padding: 12px; height: 280px; overflow: auto; border: 2px solid #34A853; background-color: rgba(52, 168, 83, 0.1);">
       <div style="font-weight: bold; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid rgba(0,0,0,0.1); color: #34A853;">Downloader</div>
       <div style="font-family: monospace; font-size: 12px;">
-        <div style="color: #0D652D; padding: 3px 0;">audio.mpg: (01 of 03) downloaded first chunk</div>
-        <div style="color: #0D652D; padding: 3px 0;">audio.mpg: (02 of 03) consumed next chunk (1024000 downloaded)</div>
-        <div style="color: #0D652D; padding: 3px 0;">audio.mpg: (03 of 03) consumed next chunk (2048000 downloaded)</div>
-        <div style="color: #0D652D; padding: 3px 0;">audio.mpg: Merge complete (2200000 bytes)</div>
-        <div style="color: #0D652D; padding: 3px 0;">audio.mpg: MD5 ok: 4fb8086802ae70fc4eef88666eb96d40</div>
       </div>
     </div>
   </div>
