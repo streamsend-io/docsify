@@ -841,7 +841,7 @@ if (existingBoxContainer && existingBoxContainer.parentNode) {
             lineTiming: 400,           // ms between adding lines (tunable)
             initialDelay: 800,         // ms before animation starts
             pauseBetweenAnimations: 8000, // ms to pause before restarting animation
-            staggerDelay: 3            // How many uploader lines to add before downloader starts
+            staggerDelay: 6            // How many uploader lines to add before downloader starts
           };
           
           // Define specific log lines for each box (taken from your screenshot)
@@ -855,21 +855,25 @@ if (existingBoxContainer && existingBoxContainer.parentNode) {
             "100mb.avi: (003 of 113) chunk uploaded",
             "100mb.avi: (004 of 113) chunk uploaded",
             "100mb.avi: (005 of 113) chunk uploaded",
+            "...",
             "100mb.avi: (112 of 113) chunk uploaded",
-            "100mb.avi: (113 of 113) final chunk uploaded md5",
+            "100mb.avi: (113 of 113) final chunk uploaded",
             "100mb.avi: md5 checksum db9cf5594922ebc70bc6713d02aacf37"
           ];
           
           const downloaderLines = [
-            "100mb.avi: (001/113): first chunk, downloaded: 891313 bytes",
-            "100mb.avi: (002/113): appended chunk, downloaded: 1782626 bytes",
-            "100mb.avi: (003/113): appended chunk, downloaded: 2673939 bytes",
-            "100mb.avi: (004/113): appended chunk, downloaded: 3565252 bytes",
-            "100mb.avi: (005/113): appended chunk, downloaded: 4456565 bytes",
+            "100mb.avi: (001/113):    first chunk, downloaded:   891313 bytes",
+            "100mb.avi: (002/113): appended chunk, downloaded:  1782626 bytes",
+            "100mb.avi: (003/113): appended chunk, downloaded:  2673939 bytes",
+            "100mb.avi: (004/113): appended chunk, downloaded:  3565252 bytes",
+            "100mb.avi: (005/113): appended chunk, downloaded:  4456565 bytes",
             "...",
+            "100mb.avi: (109/113): appended chunk, downloaded: 97153117 bytes",
+            "100mb.avi: (110/113): appended chunk, downloaded: 98044430 bytes",
+            "100mb.avi: (111/113): appended chunk, downloaded: 98935743 bytes",
             "100mb.avi: (112/113): appended chunk, downloaded: 99827056 bytes",
-            "100mb.avi: (113/113): final chunk downloaded 100000000 bytes",
-            "100mb.avi:  md5 checksum db9cf5594922ebc70bc6713d02aacf37"
+            "100mb.avi: (113/113):    final chunk, downloaded 100000000 bytes",
+            "100mb.avi: PASS :  md5 checksum db9cf5594922ebc70bc6713d02aacf37"
           ];
           
           // Animation state
