@@ -840,27 +840,36 @@ if (existingBoxContainer && existingBoxContainer.parentNode) {
           const config = {
             lineTiming: 400,           // ms between adding lines (tunable)
             initialDelay: 800,         // ms before animation starts
-            pauseBetweenAnimations: 5000, // ms to pause before restarting animation
+            pauseBetweenAnimations: 8000, // ms to pause before restarting animation
             staggerDelay: 3            // How many uploader lines to add before downloader starts
           };
           
           // Define specific log lines for each box (taken from your screenshot)
           const uploaderLines = [
-            "chunking",
-            "audio.mpg: (01 of 03) chunk uploaded",
-            "audio.mpg: (02 of 03) chunk uploaded",
-            "audio.mpg: (03 of 03) chunk uploaded",
-            "audio.mpg: finished 3 chunk uploads",
-            "final chunk uploaded md5 checksum ..."
+            "file-chunk-topic number of partitions is 1",
+            "file-chunk-topic message.max.bytes is 1048588",
+            "Automatic configuration of a chunk size of 891313 bytes",
+            "100mb.avi: chunk size 891313 bytes, file size 100000000 bytes",
+            "100mb.avi: (001 of 113) chunk uploaded",
+            "100mb.avi: (002 of 113) chunk uploaded",
+            "100mb.avi: (003 of 113) chunk uploaded",
+            "100mb.avi: (004 of 113) chunk uploaded",
+            "100mb.avi: (005 of 113) chunk uploaded",
+            "100mb.avi: (112 of 113) chunk uploaded",
+            "100mb.avi: (113 of 113) final chunk uploaded md5",
+            "100mb.avi: md5 checksum db9cf5594922ebc70bc6713d02aacf37"
           ];
           
           const downloaderLines = [
-            "audio.mpg: (01 of 03) downloaded first chunk",
-            "audio.mpg: (02 of 03) consumed next chunk (1024000 downloaded)",
-            "audio.mpg: (03 of 03) consumed next chunk (2048000 downloaded)",
-            "audio.mpg: Merge",
-            "audio.mpg: MD5 verification complete",
-            "final chunk downloaded: 100000000 bytes, md5 checksum ..."
+            "100mb.avi: (001/113): first chunk, downloaded: 891313 bytes",
+            "100mb.avi: (002/113): appended chunk, downloaded: 1782626 bytes",
+            "100mb.avi: (003/113): appended chunk, downloaded: 2673939 bytes",
+            "100mb.avi: (004/113): appended chunk, downloaded: 3565252 bytes",
+            "100mb.avi: (005/113): appended chunk, downloaded: 4456565 bytes",
+            "...",
+            "100mb.avi: (112/113): appended chunk, downloaded: 99827056 bytes",
+            "100mb.avi: (113/113): final chunk downloaded 100000000 bytes",
+            "100mb.avi:  md5 checksum db9cf5594922ebc70bc6713d02aacf37"
           ];
           
           // Animation state
