@@ -1,16 +1,14 @@
 # Overview
 
-**Welcome to Streamsend Docs**
-
-Stream files (any content, any size) using a Kafka Cluster.
+**Welcome to Streamsend Docs - Stream files (any content, any size) using a Kafka Cluster.**
 
 ## What does a Streamsend file-chunk pipeline do?
 
-A Streamsend File-chunk Pipeline is a fancy way to send a file.
+A Streamsend file-chunk pipeline is a fancy way to send a file.
 
-The Uploader splits input files into chunks that fit inside a Kafka Message, producing as many messages as needed to send the entire file.
+The **Uploader** splits input files into chunks that fit inside a Kafka Message, producing as many messages as needed to send the entire file.
 
-The Downloader consumes the Kafka Messages and uses the message-headers to re-assemble the file, verifying integrity with an MD5 check.
+The **Downloader** consumes the Kafka Messages and uses the message-headers to re-assemble the file, verifying integrity with an MD5 check.
 
 Any number of Uploaders and Downloaders can stream files at once using a single Kafka Topic.
 
@@ -50,9 +48,9 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 Sometimes it make more sense to _stream_ a file rather than to _send_ a file using file-send utilities such as mv, cp, scp, ftp or curl.
 
 - _Kafka TCO_: files alongside events: files share the same data plumbing as events
-- _Robust_: the streaming protocol uses automatic-retry to ensure that all data is sent, even on unreliable networks
+- _Robust_: for edge devices and unreliable networks, the streaming protocol uses automatic-retry to ensure that all data is sent
 - _Secure_: flexible configuration using strong encryption ciphers
-- _Efficient_: multiple built-in compression algorithms, use of zero-copy 
+- _Efficient_: automatic message size and partition count detection
 - _Scalable_: virtually unlimited parallel scalability for data uploaders and downloaders
 
 ## Key Use Cases
@@ -61,15 +59,35 @@ Sometimes it make more sense to _stream_ a file rather than to _send_ a file usi
 
 Use Kafka for more: now you can use the Kafka data pipes that send microservice-events to also send file-chunk events, using the same client & server infrastructure; the same authentication, authorisation, quotas, network bandwidth, scaling and observability.
 
-Beneficial for event-driven industries that also send files: manufacturing, retail, automotive, airlines.
+Files alongside events is especially beneficial for event-driven processes that also send files: manufacturing, retail, automotive, airlines.
 
 ### Edge Data Collection
 
-Stream files using the Kafka Protocol over unreliable networks using infinite retries, parallelism, flexible encryption, and compression. Use a Streamsend Uploader to send files at the edge for applications like drones, vehicles, offshore utilities, and mining operations.
+Stream files using the Kafka Protocol over unreliable networks using infinite retries, parallelism, flexible encryption, and compression. Use a Streamsend Uploader to send files at the edge for applications like drones, vehicles, offshore utilities, and mining operations. The new Rust-based Uploader can operate with minimally sized resources; a significant improvement over the (former) Kafka Connect based implementation.
 
-### Data Funnels
+### Secure Data Pipes
 
-Create data collection hubs where hundreds or thousands of Uploaders stream to a single Downloader, creating a funnel of data. Ideal for workstation data backup, point of sale systems, and centralized data collection.
+Traditional File-sender processes are notoriously insecure: by sending files alongside events, file pipelines can be hardened using configurable ciphers, authentication and access control
+
+### Efficiency for Network and Compute resources
+
+Streamsend Uploaders optimize efficiency by adapting to the Kafka Cluster by detecting the maximum allowable message size and then streaming messages as close to the limit as possible. For the (licensed) multi-partition mode, it auto-detects the parition count and adapts accordingly. A future release will bin-pack small files into a single kafka message and automatically select the optimal compression algorithm (depending on the file contents).
+
+### Scalability for streaming file pipelines
+
+Most deployed Kafka pipelines achieve a fraction of the throughput capability of a well-tuned client-server Kafka Connection. Streamsend is a rare thing: a Kafka Client application that has been designed to use Kafka features optimally. 
+
+## Data Funnels
+
+Most data lives in databases or in files. 
+The emergence of event-driven systems has changed a small percentage of how data is created and stored, but file creation and movement for data systems is largely unchanged.
+
+Now that many organizations have event-streaming infrastructure - usually in the form of a Kafka cluster; file-based systems are generally managed separately and they rarely participate in data streaming. Connectivity between database-based systems and event-driven systems has been available for several years (CDC, JDBC capture etc) but nothing practical has been available to enable file-based systems to participate in event-streaming pipelines. 
+
+Connecting these system using file-chunk pipelines enable files to be moved using event-streaming infrastructure.
+A __Data Funnel__ is a file-movement pattern where files created by edge devices can now be collected and streamed in (near) realtime to a central storage point. Examples include point of sale systems (document and image collection), sensor generated files (images, text etc from manufacturing, IOT), transportation systems (fleet vehicle data upload collection); etc. Combining the hugely scalable throughput capabilities of a Kafka cluster with widely-distributed file-generation data systems enables new capabilities for rapid consolidation of files.
+Future capabilities to consume and stream process files (instead of consume and merge files) open exciting new possibilities for (near) real-time file collection; including multi-modal agentic AI file data streaming.
+
 
 ## Kafka Protocol
 
