@@ -2,6 +2,46 @@
 
 The StreamSend File-chunk Pipeline provides high-throughput file transfer using Kafka as the transport layer. This guide covers platform requirements, installation options, and compatibility information.
 
+## Quickstart
+
+The easiest end-to-end test is running an Uploader and Downloader on a Mac with a local Kafka broker.
+```text
+mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
+```
+
+* download and unpack the latest macos binaries https://github.com/streamsend-io/docsify/tree/main/downloads
+```text
+  wget //raw.githubusercontent.com/streamsend-io/docsify/main/downloads/file-chunk-macos-latest.tar.gz
+  tar -xzf //raw.githubusercontent.com/streamsend-io/docsify/main/downloads/file-chunk-macos-latest.tar.gz
+```
+
+* To test using a local Kafka (at localhost:9092)
+```text
+   macos/uploader    --input.dir /tmp/streamsend/upload   --topic file-chunk-topic &
+   macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic &
+```
+
+* To test using a sasl/ssl authenticated system (including Confluent Cloud)
+```text
+   macos/uploader  --input.dir /tmp/streamsend/upload   --topic file-chunk-topic --bootstrap.servers ... --sasl.username ... --sasl.password ... --security.protocol SASL_SSL &
+ macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic --bootstrap.servers pkc...confluent.cloud --sasl.username .. --sasl.password .. --security.protocol SASL_SSL &
+```
+
+* Queue up some content to stream
+```text
+ cp -R /usr/share/man /tmp/streamsend/upload
+```
+This streams 2,964 files; after the 5-second file.minimum.age.ms. Sym-links are ignored; which accounts for the file-count delta between the directories. 
+Almost all files stream as single-chunks; apart from perlapi.1 which is streamed in multiple chunks becuase it exceeds the chunk size (if your kafka cluster sets a 1MB default limit).
+
+* Lets stream a large file
+```text
+cp /var/log/install.log /tmp/streamsend/upload
+```
+ ....or any other larger file that you want to test
+
+
+
 ## Platform Support
 
 The File-chunk Pipeline is available in multiple packaging options:
@@ -49,7 +89,7 @@ brew list librdkafka
 
 ## Binary Installation
 
-Download the appropriate package for your platform from our [downloads page](/downloads):
+Download the appropriate package for your platform from our [downloads page](https://github.com/streamsend-io/docsify/tree/main/downloads):
 - Linux AMD64: `file-chunk-linux-amd64-{version}.tar.gz`
 - macOS: `file-chunk-macos-{version}.tar.gz`
 

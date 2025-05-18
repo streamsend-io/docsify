@@ -7,9 +7,11 @@
 
 The directory to read files that will be processed.  For example "/tmp/streamsend_uploader". 
 This directory must exist and be readable and writable by the user running the uploader.
+All new files in this directory that match the "input.file.pattern" and that exceed the "file.minimum.age.ms" will be streamed by the uploader.
 The Uploader acquires a lock on the directory (lock.pid) to prevent multiple uploaders accidentally processing the same file queue.
 If the directory is not accessible, then then uploader exits with an error.
-All new files in this directory that match the "input.file.pattern" and that exceed the "file.minimum.age.ms" will be streamed by the uploader.
+Most top-level OS directories are disallowed : including "/", "/bin", "/usr", "/tmp" etc. Subdirectories are allowed for "/tmp" and "/var".
+
 After processing, the file is renamed by adding ".FINISHED", which prevents subsequent reprocessing.
 Finished files are automatically deleted from this directory after "finished.file.retention.mins" minutes.
 Subdirectories are walked: so an eligible file in (for example) "/tmp/streamsend_uploader/Wednesday/10am.txt" will be detected, streamed and renamed.
