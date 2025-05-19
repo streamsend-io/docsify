@@ -9,21 +9,24 @@ The easiest end-to-end test is running an Uploader and Downloader on a Mac with 
 mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
 ```
 
-* download and unpack the latest macos binaries https://github.com/streamsend-io/docsify/tree/main/downloads
+* Get the latest macos Streamsend Uploader & Downloader:
 ```text
   wget //raw.githubusercontent.com/streamsend-io/docsify/main/downloads/file-chunk-macos-latest.tar.gz
-  tar -xzf //raw.githubusercontent.com/streamsend-io/docsify/main/downloads/file-chunk-macos-latest.tar.gz
+  tar -xzf file-chunk-macos-latest.tar.gz
 ```
+Other builds are available at https://github.com/streamsend-io/docsify/tree/main/downloads
 
 * To test using a local Kafka (at localhost:9092)
 ```text
    macos/uploader    --input.dir /tmp/streamsend/upload   --topic file-chunk-topic &
+   sleep 1
    macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic &
 ```
 
 * To test using a sasl/ssl authenticated system (including Confluent Cloud)
 ```text
    macos/uploader  --input.dir /tmp/streamsend/upload   --topic file-chunk-topic --bootstrap.servers ... --sasl.username ... --sasl.password ... --security.protocol SASL_SSL &
+   sleep 1
  macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic --bootstrap.servers pkc...confluent.cloud --sasl.username .. --sasl.password .. --security.protocol SASL_SSL &
 ```
 
@@ -31,15 +34,21 @@ mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
 ```text
  cp -R /usr/share/man /tmp/streamsend/upload
 ```
-This streams 2,964 files; after the 5-second file.minimum.age.ms. Sym-links are ignored; which accounts for the file-count delta between the directories. 
-Almost all files stream as single-chunks; apart from perlapi.1 which is streamed in multiple chunks becuase it exceeds the chunk size (if your kafka cluster sets a 1MB default limit).
+After the 5-second file.minimum.age.ms, this streams 2,964 files.
+Almost all files fit inside a Kafka message so they stream as single-chunks; apart from perlapi.1 which is streamed in multiple chunks becuase it exceeds the chunk size. The chunk size is determined automatically (check the Uploader loggin) so it depends on your cluster limits.
+Sym-links are ignored; which accounts for the file-count delta between the directories. 
 
-* Lets stream a large file
+* Lets stream a large file 
 ```text
 cp /var/log/install.log /tmp/streamsend/upload
 ```
- ....or any other larger file that you want to test
 
+Or restart Uploader to generate a 50MB test file every ten seconds:
+```text
+macos/uploader    --input.dir /tmp/streamsend/upload   --topic file-chunk-topic --generate.test.file.bytes 50000000
+```
+
+Other Uploader configuration options https://streamsend.io/#/configuration/uploader
 
 
 ## Platform Support
