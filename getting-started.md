@@ -9,28 +9,28 @@ The easiest end-to-end test is running an Uploader and Downloader on a Mac with 
 mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
 ```
 
-* Get the latest macos Streamsend Uploader & Downloader:
+Get the latest macos Streamsend Uploader & Downloader:
 ```text
   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
   tar -xzf file-chunk-macos-latest.tar.gz
 ```
 Other builds are available at https://github.com/streamsend-io/docsify/tree/main/downloads
 
-* To test using a local Kafka (at localhost:9092)
+To test using a local Kafka (at localhost:9092)
 ```text
    macos/uploader    --input.dir /tmp/streamsend/upload   --topic file-chunk-topic &
    sleep 1
    macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic &
 ```
 
-* To test using a sasl/ssl authenticated system (including Confluent Cloud)
+To test using a sasl/ssl authenticated system (including Confluent Cloud)
 ```text
    macos/uploader  --input.dir /tmp/streamsend/upload   --topic file-chunk-topic --bootstrap.servers ... --sasl.username ... --sasl.password ... --security.protocol SASL_SSL &
    sleep 1
  macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic --bootstrap.servers pkc...confluent.cloud --sasl.username .. --sasl.password .. --security.protocol SASL_SSL &
 ```
 
-* Queue up some content to stream
+Queue up some content to stream
 ```text
  cp -R /usr/share/man /tmp/streamsend/upload
 ```
@@ -38,7 +38,7 @@ After the 5-second file.minimum.age.ms, this streams 2,964 files.
 Almost all files fit inside a Kafka message so they stream as single-chunks; apart from perlapi.1 which is streamed in multiple chunks becuase it exceeds the chunk size. The chunk size is determined automatically (check the Uploader loggin) so it depends on your cluster limits.
 Sym-links are ignored; which accounts for the file-count delta between the directories. 
 
-* Lets stream a large file 
+Lets stream a large file 
 ```text
 cp /var/log/install.log /tmp/streamsend/upload
 ```
