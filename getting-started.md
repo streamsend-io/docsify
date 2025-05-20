@@ -14,7 +14,9 @@ Get the latest macos Streamsend Uploader & Downloader:
   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
   tar -xzf file-chunk-macos-latest.tar.gz
 ```
-Other builds are available at https://github.com/streamsend-io/docsify/tree/main/downloads
+You can also download the [AMD64](https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-amd64-latest.tar.gz) binaries
+Or [Docker](https://hub.docker.com/u/streamsend) (linux/amd64)
+
 
 To test using a local Kafka (at localhost:9092)
 ```text
