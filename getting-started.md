@@ -11,7 +11,7 @@ mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
 
 * Get the latest macos Streamsend Uploader & Downloader:
 ```text
-  wget //raw.githubusercontent.com/streamsend-io/docsify/main/downloads/file-chunk-macos-latest.tar.gz
+  wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
   tar -xzf file-chunk-macos-latest.tar.gz
 ```
 Other builds are available at https://github.com/streamsend-io/docsify/tree/main/downloads
