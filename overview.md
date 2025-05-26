@@ -132,7 +132,8 @@ Chunking and merging require measurable elapsed time: so while this technique is
 
 ### Limitations
 
-- Works with closed files only - no "live" streaming media, video feeds, or appending files
-- File sizes are limited by the uploader & downloader memory size
+- Uploader Works with closed files only - no "live" streaming media, video feeds, or appending files
+- File sizes are limited by the uploader & downloader memory+swap size. The maximum size test is a 27GB file
+- Uploader monitors one directory (specified using input.dir). It cannot monitor multiple directories (although you can start multiple Uploaders on the same machine)
 - Local filesystems only (S3/HDFS support planned for future releases)
 - No stream processing or schema registry integration as this requires awareness of content-data
