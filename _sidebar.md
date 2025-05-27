@@ -1,5 +1,6 @@
 * [Home](/)
 * [Getting Started](/getting-started.md)
+* [Multi-Partition Operation](/multi-partition.md)
 * [Downloads](/downloads.md)
 * [Docker](/docker.md)
 * [Troubleshooting](/troubleshooting.md)

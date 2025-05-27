@@ -1,4 +1,3 @@
-
 # Streamsend Uploader
 
 ## Configuration Properties
@@ -162,4 +161,87 @@ For Confluent Cloud, specify bootstrap.servers, sasl.username (api key), sasl.pa
 For a local Kafka Cluster with noauth specify bootstrap.servers, and do not configure sasl.username and sasl.password.
 Other authentication schemes may function, but have not been tested.
 
+## Kafka Producer Configuration Properties
 
+The following Kafka producer configuration properties can be tuned to optimize performance and reliability. These properties directly control how the underlying librdkafka producer behaves.
+
+### linger.ms
+
+The producer groups together any records that arrive in between request transmissions into a single batched request. This setting accomplishes batching by adding a small amount of artificial delay—rather than immediately sending out a record, the producer will wait for up to the given delay to allow other records to be sent so that the sends can be batched together.
+
+A higher value can lead to fewer, more efficient requests at the cost of a small amount of latency. Setting to 0 disables batching delay entirely.
+
+- *Type:* STRING  
+- *Default:* "5"
+- *librdkafka default:* 5ms
+
+### batch.num.messages
+
+Maximum number of messages batched in one MessageSet. The total MessageSet size is also limited by batch.size and message.max.bytes.
+
+Higher values improve throughput by reducing the number of requests sent to brokers, but may increase latency for individual messages.
+
+- *Type:* STRING
+- *Default:* "10000" 
+- *librdkafka default:* 10000
+
+### max.in.flight.requests.per.connection
+
+Maximum number of in-flight requests per broker connection. This is a global setting that limits the total number of unacknowledged requests across all partitions.
+
+Higher values can improve throughput but may cause message reordering if retries are enabled and a request fails. For strict ordering, set to 1.
+
+- *Type:* STRING
+- *Default:* "5"
+- *librdkafka default:* 5
+
+### retries  
+
+How many times to retry sending a failing message. Note that retrying may cause reordering unless enable.idempotence is set to true.
+
+The default value allows for effectively unlimited retries. Set to 0 to disable retries entirely.
+
+- *Type:* STRING
+- *Default:* "2147483647"
+- *librdkafka default:* 2147483647 (effectively unlimited)
+
+### retry.backoff.ms
+
+The backoff time in milliseconds before retrying a protocol request. This is the initial backoff time, which will be increased exponentially for each failed request.
+
+Lower values result in faster retries but may overwhelm brokers experiencing issues. Higher values reduce broker load but increase recovery time.
+
+- *Type:* STRING  
+- *Default:* "100"
+- *librdkafka default:* 100ms
+
+### enable.auto.commit
+
+Automatically and periodically commit offsets in the background. Note: setting this to false does not prevent the consumer from fetching previously committed start offsets.
+
+For the Uploader (producer), this setting affects consumer group behavior when the client also acts as a consumer for metadata operations.
+
+- *Type:* STRING
+- *Default:* "true"
+- *librdkafka default:* true
+
+### auto.offset.reset
+
+What to do when there is no initial offset in Kafka or if the current offset does not exist any more on the server. Valid values are:
+- `earliest`: automatically reset the offset to the earliest offset
+- `latest`: automatically reset the offset to the latest offset  
+- `error`: throw exception if no previous offset is found
+
+For the Uploader, this primarily affects consumer group behavior during metadata operations.
+
+- *Type:* STRING
+- *Default:* "latest"
+- *librdkafka default:* latest
+
+### session.timeout.ms
+
+Client group session and failure detection timeout. The consumer sends periodic heartbeats to indicate its liveness to the broker. If no heartbeats are received by the broker for a group member within the session timeout, the broker will remove the consumer from the group and trigger a rebalance.
+
+- *Type:* STRING
+- *Default:* "45000"  
+- *librdkafka default:* 45000ms
