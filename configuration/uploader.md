@@ -71,20 +71,20 @@ The chunk size for automatic chunk sizing is calculated at Uploader startup and 
 - *Default Value:* 0
 
 
-### file.chunk.size.auto.adjustor
+### upload.payload.percentage
 
-Over-ride for the percentage headroom to allow in each message below the message.max.bytes (or topic message.max.bytes, whichever is smaller).
-For example, for a Kafka cluster message.max.bytes of 2048000, a file.chunk.size.auto.adjustor=10 results in a chunk size of 1843200 (2048000-204800).
-Use this property to fine-tune message sizes to maximize uploader throughput. If streamed files are of predictable and uniform size (and content type) then reducing the headroom may be beneficial.
-As the chunk size includes the key and header, the actual message size will always be larger than the configured chunk size.
-The headroom is buffer-space to avoid "Message too large" errors from the Kafka Broker when the Uploader attempts to produce a message that exceeds cluster limits.
-The valid range for file.chunk.size.auto.adjustor is 1-99.
-If both binary.chunk.size.bytes and file.chunk.size.auto.adjustor are configured, then the Uploader terminates with 'file.chunk.size.bytes={}, yet file.chunk.size.auto.adjustor={}. Unable to start'.
+The percentake of the Kafka cluster message.max.bytes (or topic message.max.bytes, whichever is smaller) to use for file chunks when using automatic chunk sizing.
+The default is 95%, meaning that file chunks are sized at 95% of message.max.bytes.
+This applies for all Kafka cluster types, including Apache Kafka and Confluent Cloud.  Earlier releases had different values for Confluent Cloud and Apache Kafka - this limitation has been lifted.
+The remaining 5% accomodates the message header and message key. Values larger than 95 are likely to cause message-too-large errors.
+Use this property to fine-tune message sizes to maximize uploader throughput or to accomodate other Kafka cluster sizing requirements.
+The valid range is 1-99.
+If both binary.chunk.size.bytes and upload.payload.percentage  are configured, then the Uploader terminates with 'file.chunk.size.bytes={}, yet file.chunk.size.auto.adjustor={}. Unable to start'.
 If automatic chunk sizing is activated (binary.chunk.size.bytes=0) but file.chunk.size.auto.adjustor is unset, then it is automatically set to 15 (or 55 for a Confluent Cloud cluster);
 
 - *Type:* Integer
-- *Default Value:* 0
-- *Valid Range* : 0-99
+- *Default Value:* 95
+- *Valid Range* : 1-99
 
 
 
@@ -152,7 +152,7 @@ When set to "yes" the Uploader functions normally except events are not actually
 - - *Default:* "no"
 
 
-### bootstrap.servers, security.protocol, ssl.endpoint.identification.algorithm, sasl.mechanism, sasl.username, sasl.password
+### bootstrap.servers, security.protocol, ssl.endpoint.identification.algorithm, sasl.mechanism, sasl.username, sasl.password, max.poll.interval.ms, fetch.min.bytes, request.timeout.ms, metadata.max.age.ms, linger.ms, batch.num.messages, max.in.flight.requests.per.connection
 
 Authentication properties to connect to a Kafka cluster.
 Supported authentication schemes are SASL/SSL and noauth.

@@ -40,7 +40,9 @@ Downloaders start one  consumer thread.
 - *Type:* STRING
 
 
-### bootstrap.servers, security.protocol, ssl.endpoint.identification.algorithm, sasl.mechanism, sasl.username, sasl.password
+### bootstrap.servers, security.protocol, ssl.endpoint.identification.algorithm, sasl.mechanism, sasl.username, sasl.password, max.poll.interval.ms, fetch.min.bytes, request.timeout.ms
+, metadata.max.age.ms
+
 
 Authentication properties to connect to a Kafka cluster.
 Supported authentication schemes are SASL/SSL and noauth.
