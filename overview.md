@@ -43,6 +43,15 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 
 *The Uploader splits the file into chunks and sends them to the Kafka topic, while the Downloader processes incoming chunks and reassembles the complete file.*
 
+## Whats new?
+
+- Bin-packed small files: each chunk is bin-packed with small-files - potentially storing hundreds of files in one Kafka event
+- Read-only small-file handling: files are no longer renamed (".PROCESSING",".FINISHED" etc) - instead, state is tracked in memory
+- Multi-partition Uploader: chunks for (large files) are automatically distributed to all topic partitions (requires the "license.key" config)
+- Multi-partition Downloader: one consumer thread per topic partition, operating in parallel (requires the "license.key" config)
+
+
+
 ## Why Stream Files?
 
 Sometimes it make more sense to _stream_ a file rather than to _send_ a file using file-send utilities such as mv, cp, scp, ftp or curl.
