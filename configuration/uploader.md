@@ -127,21 +127,12 @@ Topic retention should be set to the maximum anticipated recovery window that a 
 
 
 ### finished.file.retention.mins
+_Deprecated~ - Uploader now uses a topic to maintain state, and files in input.dir are not renamed or deleted
 
-Then number of minutes to retain a file in the files.dir directory after it has been uploaded successfully. 
-The default is 60, meaning that streamed files (with a post-fix .FINISHED) are deleted automatically after 60 minutes.
-Subdirectories are not removed automatically.
-Set this to -1 to disable deletion of finished files; which must then be managed manually.
-
-- *Type:* INTEGER
-- - *Default:* 60
 
 ### error.file.retention.mins
+_Deprecated~ - Uploader now uses a topic to maintain state, and files in input.dir are not renamed or deleted
 
-Then number of minutes to retain a file in the files.dir directory after it has been uploaded unsuccessfully. Set to -1 to disable deletion.
-
-- *Type:* INTEGER
-- - *Default:* -1
 
 
 ### dry.run
@@ -245,3 +236,72 @@ Client group session and failure detection timeout. The consumer sends periodic 
 - *Type:* STRING
 - *Default:* "45000"  
 - *librdkafka default:* 45000ms
+
+
+### processing.state.topic
+
+The Kafka topic used to persistently store file processing state across uploader restarts.
+This topic maintains a record of which files have been successfully processed, preventing duplicate uploads when the uploader is restarted.
+The state is stored using a hierarchical JSON structure, grouped by file path, and compressed using gzip to minimize message size.
+The topic is automatically created with a single partition and single replica if it doesn't exist.
+Each uploader instance (identified by hostname and uploader.name) maintains its own state record within this topic.
+State records are automatically cleaned up to remove references to files that exceed the file.maximum.age.ms threshold.
+If the state checkpoint message becomes too large for the configured chunk size, the uploader will automatically reduce the number of files tracked and continue operation.
+
+- *Type:* STRING
+- *Default:* "streamsend-state-topic"
+
+### processing.state.checkpoint.interval.secs
+
+The interval in seconds between automatic checkpoints of file processing state to the processing.state.topic.
+More frequent checkpoints provide better protection against data loss if the uploader crashes, but generate more Kafka traffic.
+Less frequent checkpoints reduce Kafka overhead but may result in some duplicate processing if the uploader restarts.
+Checkpoints are also triggered automatically when files are marked as completed and when the uploader shuts down gracefully.
+The minimum value is 1 second, and the maximum recommended value is 3600 seconds (1 hour).
+If a checkpoint fails due to message size limits, the uploader will continue operating and attempt to checkpoint again after cleaning up expired file references.
+
+- *Type:* INTEGER
+- *Default:* 60
+- *Valid Range:* 1 - 3600
+
+### file.maximum.age.ms
+
+The maximum age in milliseconds for files to be eligible for processing.
+Files older than this threshold will be ignored by the uploader, even if they match the input.file.pattern and meet the file.minimum.age.ms criteria.
+This helps prevent processing of very old files that may have been left in the input directory.
+A value of 0 disables maximum age checking, allowing files of any age to be processed.
+This property works in conjunction with file.minimum.age.ms to define a processing window: files must be at least file.minimum.age.ms old but not older than file.maximum.age.ms.
+Files that exceed this age are also automatically removed from the processing state during checkpoint cleanup.
+The value must be greater than file.minimum.age.ms when both are configured.
+
+- *Type:* LONG
+- *Default:* 0 (disabled)
+- *Valid Range:* 0 or greater than file.minimum.age.ms
+
+## Persistent State Management
+
+The uploader now maintains persistent state to track which files have been successfully processed. This prevents duplicate uploads when the uploader restarts and provides several benefits:
+
+### State Persistence
+- File processing state is stored in a dedicated Kafka topic (processing.state.topic)
+- State includes file path, filename, last modified time, and processing status
+- State is organized hierarchically by directory path for efficient storage
+- Automatic compression reduces state message size by up to 90%
+
+### Duplicate Prevention
+- Files are checked against persistent state before processing
+- Files are only reprocessed if they have been modified since last upload
+- State survives uploader restarts, preventing duplicate uploads
+- Multiple uploader instances can safely share the same input directory
+
+### State Management
+- Automatic cleanup of expired file references based on file.maximum.age.ms
+- Intelligent size management prevents "message too large" errors
+- Graceful degradation: if state becomes too large, older entries are pruned automatically
+- State checkpointing continues even if individual checkpoint attempts fail
+
+### Performance Optimization
+- Hierarchical JSON structure reduces state size for directories with many files
+- Compressed state messages minimize Kafka storage and network usage
+- Efficient in-memory state lookup prevents redundant file processing
+- Configurable checkpoint intervals balance data protection with performance

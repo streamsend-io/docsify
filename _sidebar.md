@@ -4,6 +4,7 @@
 * [Multi-Partition Operation](/multi-partition.md)
 * [Downloads](/downloads.md)
 * [Docker](/docker.md)
+* [Uploader State Management](/state-management.md)
 * [Troubleshooting](/troubleshooting.md)
 * **Configuration**
   * [Uploader](/configuration/uploader.md)
