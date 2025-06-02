@@ -45,10 +45,12 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 
 ## Whats new?
 
-- Bin-packed small files: each chunk is bin-packed with small-files - potentially storing hundreds of files in one Kafka event
-- Read-only small-file handling: files are no longer renamed (".PROCESSING",".FINISHED" etc) - instead, state is tracked in memory
+- Auto-detection of Kafka max.message.bytes and partition-count: Uploaders optimize pipelines accordingly
+- Bin-packed small files: Uploaders "fill" the a Kafka message with small files, enabling rapid mirroring of all filesystem contents through a topic
+- In-memory operation: Uploaders monitor and stream eligible files using topic-backed state, minimizing filesystems permissions for operation
 - Multi-partition Uploader: chunks for (large files) are automatically distributed to all topic partitions (requires the "license.key" config)
 - Multi-partition Downloader: one consumer thread per topic partition, operating in parallel (requires the "license.key" config)
+- Faster" bin-packed small files and parallel upload of large files enables Kafka-cluster levels of throughput for file streams
 
 
 
@@ -142,7 +144,7 @@ Chunking and merging require measurable elapsed time: so while this technique is
 ### Limitations
 
 - Uploader Works with closed files only - no "live" streaming media, video feeds, or appending files
-- File sizes are limited by the uploader & downloader memory+swap size. The maximum size test is a 27GB file
+- File sizes are limited by the uploader & downloader memory+swap size (the maximum size tested is a 27GB file)
 - Uploader monitors one directory (specified using input.dir). It cannot monitor multiple directories (although you can start multiple Uploaders on the same machine)
 - Local filesystems only (S3/HDFS support planned for future releases)
 - No stream processing or schema registry integration as this requires awareness of content-data
