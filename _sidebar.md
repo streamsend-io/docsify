@@ -1,6 +1,7 @@
 * [Home](/)
 * [Getting Started](/getting-started.md)
 * [Small Files](/small-files.md)
+* [Authentication](/authentication.md)
 * [Multi-Partition Operation](/multi-partition.md)
 * [Downloads](/downloads.md)
 * [Docker](/docker.md)

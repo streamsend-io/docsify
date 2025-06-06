@@ -151,6 +151,77 @@ The defaults are security.protocol=PLAINTEXT, ssl.endpoint.identification.algori
 For Confluent Cloud, specify bootstrap.servers, sasl.username (api key), sasl.password (secret).
 For a local Kafka Cluster with noauth specify bootstrap.servers, and do not configure sasl.username and sasl.password.
 Other authentication schemes may function, but have not been tested.
+Updated Authentication Properties
+security.protocol
+Authentication protocol for connecting to the Kafka cluster.
+Supported values:
+
+plaintext: No authentication (local/development clusters)
+SASL_SSL: Encrypted connection with SASL authentication (Confluent Cloud, secured clusters, AWS MSK IAM)
+Type: STRING
+Default: "plaintext"
+Valid Values: "plaintext", "SASL_SSL"
+
+sasl.mechanism
+SASL authentication mechanism when using security.protocol=SASL_SSL.
+Supported values:
+
+PLAIN: Username/password authentication (Confluent Cloud, most managed services)
+AWS_MSK_IAM: AWS IAM authentication for Amazon MSK clusters
+Type: STRING
+Default: "PLAIN"
+Valid Values: "PLAIN", "AWS_MSK_IAM"
+
+
+
+## AWS MSK IAM Authentication Properties
+
+### aws.region
+
+The AWS region where your MSK cluster is located. This is required when using AWS MSK IAM authentication.
+The region must match the region where your MSK cluster was created.
+This setting is ignored when using other authentication methods (SASL_SSL with username/password or no authentication).
+Can also be set via the AWS_REGION environment variable.
+
+Type: STRING
+Default: "us-east-1"
+
+### aws.access.key.id
+
+The AWS access key ID for IAM authentication to AWS MSK.
+Leave empty to use IAM roles or the AWS default credential chain (recommended for production).
+When specified, aws.secret.access.key must also be configured.
+This setting is only used when sasl.mechanism=AWS_MSK_IAM.
+Can also be set via the AWS_ACCESS_KEY_ID environment variable.
+For security, prefer IAM roles over explicit credentials when running on AWS infrastructure.
+
+Type: STRING
+Default: (empty - use IAM roles)
+
+### aws.secret.access.key
+
+The AWS secret access key for IAM authentication to AWS MSK.
+Leave empty to use IAM roles or the AWS default credential chain (recommended for production).
+When specified, aws.access.key.id must also be configured.
+This setting is only used when sasl.mechanism=AWS_MSK_IAM.
+Can also be set via the AWS_SECRET_ACCESS_KEY environment variable.
+For security, prefer IAM roles over explicit credentials when running on AWS infrastructure.
+
+Type: STRING
+Default: (empty - use IAM roles)
+
+### aws.session.token
+
+The AWS session token for temporary IAM credentials.
+This is typically used with AWS STS (Security Token Service) temporary credentials.
+Leave empty when using long-term access keys or IAM roles.
+This setting is only used when sasl.mechanism=AWS_MSK_IAM and temporary credentials are being used.
+Can also be set via the AWS_SESSION_TOKEN environment variable.
+
+Type: STRING
+Default: (empty)
+
+
 
 ## Kafka Producer Configuration Properties
 

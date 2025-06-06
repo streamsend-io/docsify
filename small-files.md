@@ -6,10 +6,8 @@ Streamsend handles files differently based on their size relative to the configu
 
 ### Large Files (≥ Chunk Size)
 Files that meet or exceed the chunk size are processed using **multi-threaded chunking**:
-- File is renamed to `.PROCESSING` during upload
 - Split into multiple chunks across worker threads
 - Each chunk sent as separate Kafka message
-- File renamed to `.FINISHED` after successful upload
 - Downloader reconstructs file from multiple chunks
 
 ### Small Files (< Chunk Size)
@@ -46,16 +44,13 @@ Small Files: file1.txt (100KB), file2.txt (200KB), file3.txt (800KB)
 
 Result: All three files packed into single 1MB tarball
 - Saves 2 Kafka messages vs individual sending
-- Reduces filesystem I/O (no .PROCESSING/.FINISHED)
 - Maintains file integrity and metadata
 ```
 
 ## State Management
 
 ### Large Files
-- **Filesystem-based**: Uses `.PROCESSING` and `.FINISHED` suffixes
 - **Crash recovery**: Incomplete uploads detected by suffix state
-- **Cleanup**: `.FINISHED` files deleted after retention period
 
 ### Small Files  
 - **Memory-based**: File identity tracked by (path, size, modified_time)
