@@ -4,7 +4,7 @@
 * [Small Files](/small-files.md)
 * [Authentication](/authentication.md)
 * [Multi-Partition Operation](/multi-partition.md)
-* [Downloads](/downloads.md)
+* [Downloads](/downloads)
 * [Docker](/docker.md)
 * [Uploader State Management](/state-management.md)
 * [Troubleshooting](/troubleshooting.md)
