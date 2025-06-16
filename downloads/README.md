@@ -11,8 +11,11 @@ The Linux AMD64 package contains both the uploader and downloader executables al
 ### Installation
 
 1. Download the latest package [AMD64](https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-linux-amd64-latest.tar.gz)
-   or   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-amd64-latest.tar.gz"
-   and tar -xzf file-chunk-amd64-latest.tar.gz
+   or   
+```text
+wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-amd64-latest.tar.gz"
+tar -xzf file-chunk-amd64-latest.tar.gz
+```
 2. Extract the archive: `tar -xzf file-chunk-linux-amd64-latest.tar.gz`
 3. Navigate to the extracted directory: `cd linux-amd64`
 4. Run the installation script: `./install.sh`
@@ -25,8 +28,10 @@ The macOS package contains both the uploader and downloader executables.
 ### Installation
 
 1. Download the latest package [MACOS](https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-linux-macos-latest.tar.gz)
-   or   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
-   and tar -xzf file-chunk-macos-latest.tar.gz
+```text
+   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
+   tar -xzf file-chunk-macos-latest.tar.gz
+```
 2. Extract the archive: `tar -xzf file-chunk-macos-latest.tar.gz`
 3. Navigate to the extracted directory: `cd macos`
 4. Run the installation script: `./install.sh`
