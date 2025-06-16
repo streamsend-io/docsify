@@ -1,5 +1,6 @@
 * [Home](/)
 * [Getting Started](/getting-started.md)
+* [Output Sinks](/output-sinks.md)
 * [Small Files](/small-files.md)
 * [Authentication](/authentication.md)
 * [Multi-Partition Operation](/multi-partition.md)

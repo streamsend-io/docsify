@@ -45,6 +45,8 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 
 ## Whats new?
 
+- Configurable Output Sinks: Downloader can now write to a S3 bucket instead of a local filesystem
+
 - Auto-detection of Kafka max.message.bytes and partition-count: Uploaders optimize pipelines accordingly
 - Bin-packed small files: Uploaders "fill" the a Kafka message with small files, enabling rapid mirroring of all filesystem contents through a topic
 - In-memory operation: Uploaders monitor and stream eligible files using topic-backed state, minimizing filesystems permissions for operation
@@ -52,7 +54,29 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 - Multi-partition Downloader: one consumer thread per topic partition, operating in parallel (requires the "license.key" config)
 - Faster" bin-packed small files and parallel upload of large files enables Kafka-cluster levels of throughput for file streams
 
+## Output Sinks
 
+The Streamsend Downloader supports flexible output destinations to meet different deployment scenarios:
+
+### Local Filesystem (Default)
+- **Direct file writing** to local storage with configurable output directory
+- **Automatic directory creation** organized by uploader name and file paths
+- **Sequential chunk assembly** maintaining file integrity and order
+- **Ideal for** edge computing, local processing, and traditional file workflows
+
+### S3 Cloud Storage
+- **Automatic cloud upload** to any S3-compatible bucket (AWS S3, MinIO, etc.)
+- **Seamless authentication** using AWS credentials or IAM roles
+- **Organized storage** with configurable key prefixes and directory structures  
+- **Startup validation** with comprehensive connectivity testing
+- **Ideal for** cloud-native deployments, data lakes, and distributed systems
+
+### Configuration-Driven Selection
+- **Automatic detection**: Set `s3.bucket.name` to enable S3 mode, otherwise local mode is used
+- **No code changes**: Same Kafka streaming protocol regardless of output destination
+- **Environment flexibility**: Deploy the same application in edge, hybrid, or cloud environments
+
+The dual-sink architecture enables Streamsend to bridge edge computing environments with cloud storage while maintaining consistent file chunking, reassembly, and integrity verification across all deployment scenarios.
 
 ## Why Stream Files?
 
@@ -99,7 +123,6 @@ Connecting these system using file-chunk pipelines enable files to be moved usin
 A __Data Funnel__ is a file-movement pattern where files created by edge devices can now be collected and streamed in (near) realtime to a central storage point. Examples include point of sale systems (document and image collection), sensor generated files (images, text etc from manufacturing, IOT), transportation systems (fleet vehicle data upload collection); etc. Combining the hugely scalable throughput capabilities of a Kafka cluster with widely-distributed file-generation data systems enables new capabilities for rapid consolidation of files.
 Future capabilities to consume and stream process files (instead of consume and merge files) open exciting new possibilities for (near) real-time file collection; including multi-modal agentic AI file data streaming.
 
-
 ## Kafka Protocol
 
 ### Infinite Retries
@@ -129,7 +152,7 @@ The latest Streamsend release is built with Rust, making it:
 Additional features include:
 - Support for directory structures (mirroring subdirectories to the downloader)
 - Automatic creation of separate directories for each uploader
-- Works on local filesystems and Kubernetes persistent volumes
+- Works with local filesystems, cloud storage (S3), and Kubernetes persistent volumes
 
 ## What does a Streamsend file-chunk pipeline not do?
 
@@ -146,5 +169,4 @@ Chunking and merging require measurable elapsed time: so while this technique is
 - Uploader Works with closed files only - no "live" streaming media, video feeds, or appending files
 - File sizes are limited by the uploader & downloader memory+swap size (the maximum size tested is a 27GB file)
 - Uploader monitors one directory (specified using input.dir). It cannot monitor multiple directories (although you can start multiple Uploaders on the same machine)
-- Local filesystems only (S3/HDFS support planned for future releases)
 - No stream processing or schema registry integration as this requires awareness of content-data
