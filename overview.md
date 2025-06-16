@@ -1,4 +1,3 @@
-
 # Overview
 
 **Welcome to Streamsend Docs - Stream files (any content, any size) using a Kafka Cluster.**
