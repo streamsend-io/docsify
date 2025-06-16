@@ -7,11 +7,12 @@ This page provides access to the latest StreamSend executables for various platf
 
 The Linux AMD64 package contains both the uploader and downloader executables along with the required libraries.
 
-- <a href="file-chunk-linux-amd64-latest.tar.gz" download>Latest Version</a>
 
 ### Installation
 
-1. Download the latest package
+1. Download the latest package [AMD64](https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-linux-amd64-latest.tar.gz)
+   or   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-amd64-latest.tar.gz"
+   and tar -xzf file-chunk-amd64-latest.tar.gz
 2. Extract the archive: `tar -xzf file-chunk-linux-amd64-latest.tar.gz`
 3. Navigate to the extracted directory: `cd linux-amd64`
 4. Run the installation script: `./install.sh`
@@ -20,11 +21,12 @@ The Linux AMD64 package contains both the uploader and downloader executables al
 
 The macOS package contains both the uploader and downloader executables.
 
-- <a href="file-chunk-macos-latest.tar.gz" download>Latest Version</a>
 
 ### Installation
 
-1. Download the latest package
+1. Download the latest package [MACOS](https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-linux-macos-latest.tar.gz)
+   or   wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
+   and tar -xzf file-chunk-macos-latest.tar.gz
 2. Extract the archive: `tar -xzf file-chunk-macos-latest.tar.gz`
 3. Navigate to the extracted directory: `cd macos`
 4. Run the installation script: `./install.sh`
