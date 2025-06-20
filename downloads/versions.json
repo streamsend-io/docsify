@@ -2,7 +2,8 @@
   {
     "version": "latest",
     "date": "2025-05-05",
-    "linux_amd64": "streamsend-linux-amd64-latest.tar.gz"
+    "linux_amd64": "streamsend-linux-amd64-latest.tar.gz",
+    "macos": "file-chunk-macos-latest.tar.gz"
   },
   {
     "version": "0.1.0",
