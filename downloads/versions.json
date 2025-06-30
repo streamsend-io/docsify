@@ -3,7 +3,8 @@
     "version": "latest",
     "date": "2025-05-05",
     "linux_amd64": "file-chunk-linux-amd64-latest.tar.gz",
-    "macos": "file-chunk-macos-latest.tar.gz"
+    "macos": "file-chunk-macos-latest.tar.gz",
+    "windows": "file-chunk-windows-latest.tar.gz"
   },
   {
     "version": "0.1.0",
