@@ -1,4 +1,3 @@
-
 # Overview
 
 **Welcome to Streamsend Docs - Stream files (any content, any size) using a Kafka Cluster.**
@@ -46,6 +45,9 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 
 ## Whats new?
 
+- Streamsend Uploader for Windows: Native Windows executable now available for seamless file streaming on Windows environments
+
+
 - Configurable Output Sinks: Downloader can now write to a S3 bucket instead of a local filesystem
 
 - Auto-detection of Kafka max.message.bytes and partition-count: Uploaders optimize pipelines accordingly
@@ -54,6 +56,12 @@ Any number of Uploaders and Downloaders can stream files at once using a single 
 - Multi-partition Uploader: chunks for (large files) are automatically distributed to all topic partitions (requires the "license.key" config)
 - Multi-partition Downloader: one consumer thread per topic partition, operating in parallel (requires the "license.key" config)
 - Faster" bin-packed small files and parallel upload of large files enables Kafka-cluster levels of throughput for file streams
+
+
+## Streamsend Uploader for Windows
+
+The Windows uploader is a standalone executable that runs natively on Windows systems without requiring additional runtime dependencies. It handles Windows file paths, directory monitoring, and file system operations using native Windows APIs. The uploader works with existing Kafka clusters and maintains compatibility with all current downloader configurations. This enables deployment of file streaming pipelines across both Linux and Windows environments using the same Kafka infrastructure.
+
 
 ## Output Sinks
 
