@@ -1,269 +1,318 @@
 # Getting Started
 
-The StreamSend File-chunk Pipeline provides high-throughput file transfer using Kafka as the transport layer. This guide covers platform requirements, installation options, and compatibility information.
+The StreamSend File-chunk Pipeline provides high-throughput file transfer using Kafka as the transport layer. This guide covers Kafka server setup options and client installation.
 
-## Quickstart
+## Kafka Server Setup
+
+Choose your Kafka environment based on your requirements:
+
+### Apache Kafka (Local Development)
+
+For local testing and development, set up a local Kafka broker:
+
+```bash
+# Download and start Kafka
+wget https://archive.apache.org/dist/kafka/3.9.0/kafka_2.13-3.9.0.tgz
+tar -xzf kafka_2.13-3.9.0.tgz
+cd kafka_2.13-3.9.0
+
+# Start Zookeeper and Kafka
+bin/zookeeper-server-start.sh config/zookeeper.properties &
+bin/kafka-server-start.sh config/server.properties &
+
+# Create required topics
+bin/kafka-topics.sh --create --topic streamsend-state-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1 --config cleanup.policy=compact
+bin/kafka-topics.sh --create --topic file-chunk-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+```
+
+**Connection settings for local Kafka:**
+- Bootstrap servers: `localhost:9092`
+- Security: No authentication required
+
+### Confluent Cloud
+
+For managed Kafka in the cloud:
+
+1. **Create a Kafka cluster** in [Confluent Cloud](https://confluent.cloud)
+2. **Generate API credentials** (API Key and Secret)
+3. **Create required topics:**
+   - `streamsend-state-topic` (compacted cleanup policy)
+   - `file-chunk-topic` (standard topic)
+
+**Connection settings for Confluent Cloud:**
+- Bootstrap servers: `pkc-xxxxx.region.aws.confluent.cloud:9092`
+- Security protocol: `SASL_SSL`
+- SASL mechanism: `PLAIN`
+- SASL username: Your API Key
+- SASL password: Your API Secret
+
+### AWS MSK (Managed Streaming for Kafka)
+
+For enterprise AWS environments with SCRAM authentication:
+
+#### Prerequisites
+- AWS MSK cluster with SCRAM authentication enabled
+- EC2 instance in the same VPC as MSK cluster
+- Java 8+ and Kafka client tools installed
+
+#### Setup Steps
+
+**1. Install Kafka Client Tools:**
+```bash
+# On Amazon Linux 2023
+sudo yum update -y
+sudo yum install -y java-1.8.0-amazon-corretto wget curl tar
+
+# Download Kafka client
+wget https://archive.apache.org/dist/kafka/3.9.0/kafka_2.13-3.9.0.tgz
+tar -xzf kafka_2.13-3.9.0.tgz
+cd kafka_2.13-3.9.0
+
+# Download MSK IAM Auth library
+curl -L -o aws-msk-iam-auth.jar https://github.com/aws/aws-msk-iam-auth/releases/download/v1.1.5/aws-msk-iam-auth-1.1.5-all.jar
+```
+
+**2. Configure SCRAM Authentication:**
+
+Create admin client properties for user management:
+```bash
+cat > admin-client.properties << 'EOF'
+security.protocol=SASL_SSL
+sasl.mechanism=AWS_MSK_IAM
+sasl.jaas.config=software.amazon.msk.auth.iam.IAMLoginModule required;
+sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+EOF
+```
+
+**3. Create SCRAM User Account:**
+```bash
+# Set your cluster details
+CLUSTER_ARN="arn:aws:kafka:region:account:cluster/your-cluster-name/cluster-id"
+BOOTSTRAP_SERVERS_IAM="your-cluster-iam-bootstrap-servers:9098"
+MSK_USERNAME="streamsend-user"
+MSK_PASSWORD="your-secure-password"
+
+# Create SCRAM user
+export CLASSPATH="aws-msk-iam-auth.jar"
+bin/kafka-configs.sh --bootstrap-server ${BOOTSTRAP_SERVERS_IAM} \
+  --command-config admin-client.properties \
+  --alter --add-config "SCRAM-SHA-512=[password=${MSK_PASSWORD}]" \
+  --entity-type users --entity-name "${MSK_USERNAME}"
+
+# Verify user creation
+bin/kafka-configs.sh --bootstrap-server ${BOOTSTRAP_SERVERS_IAM} \
+  --command-config admin-client.properties \
+  --describe --entity-type users
+```
+
+**4. Configure SCRAM Client Access:**
+
+Create JAAS configuration:
+```bash
+cat > users_jaas.conf << EOF
+KafkaClient {
+   org.apache.kafka.common.security.scram.ScramLoginModule required
+   username="${MSK_USERNAME}"
+   password="${MSK_PASSWORD}";
+};
+EOF
+
+export KAFKA_OPTS=-Djava.security.auth.login.config=$(pwd)/users_jaas.conf
+```
+
+Create SCRAM client properties:
+```bash
+cat > scram-client.properties << 'EOF'
+security.protocol=SASL_SSL
+sasl.mechanism=SCRAM-SHA-512
+ssl.truststore.location=/usr/lib/jvm/java-1.8.0-amazon-corretto/jre/lib/security/cacerts
+ssl.truststore.password=changeit
+EOF
+```
+
+**5. Create Required Topics:**
+```bash
+# Get SCRAM bootstrap servers
+BOOTSTRAP_SERVERS_SCRAM="your-cluster-scram-bootstrap-servers:9096"
+
+# Create compacted state topic
+bin/kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVERS_SCRAM} \
+  --command-config scram-client.properties \
+  --create --topic streamsend-state-topic \
+  --partitions 1 --replication-factor 3 \
+  --config cleanup.policy=compact
+
+# Create standard file chunk topic
+bin/kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVERS_SCRAM} \
+  --command-config scram-client.properties \
+  --create --topic file-chunk-topic \
+  --partitions 1 --replication-factor 3
+
+# Verify topics
+bin/kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVERS_SCRAM} \
+  --command-config scram-client.properties --list
+```
+
+**Connection settings for AWS MSK:**
+- Bootstrap servers: `your-cluster-scram-bootstrap-servers:9096`
+- Security protocol: `SASL_SSL`
+- SASL mechanism: `SCRAM-SHA-512`
+- SASL username: Your SCRAM username
+- SASL password: Your SCRAM password
+
+## Client Installation
 
 ### macOS
 
-The easiest end-to-end test is running an Uploader and Downloader on a Mac with a local Kafka broker.
-```text
+**Prerequisites:**
+- macOS 10.15 or later
+- Install librdkafka: `brew install librdkafka`
+
+**Installation:**
+```bash
+# Create directories
 mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
+
+# Download binaries
+wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
+tar -xzf file-chunk-macos-latest.tar.gz
 ```
 
-Get the latest macOS Streamsend Uploader & Downloader:
-```text
-  wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-macos-latest.tar.gz"
-  tar -xzf file-chunk-macos-latest.tar.gz
+**Usage Examples:**
+
+Local Kafka:
+```bash
+macos/uploader --input.dir /tmp/streamsend/upload --topic file-chunk-topic &
+macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic &
 ```
 
-To test using a local Kafka (at localhost:9092)
-```text
-   macos/uploader    --input.dir /tmp/streamsend/upload   --topic file-chunk-topic &
-   sleep 1
-   macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic &
+Confluent Cloud:
+```bash
+macos/uploader --input.dir /tmp/streamsend/upload --topic file-chunk-topic \
+  --bootstrap.servers pkc-xxxxx.region.aws.confluent.cloud:9092 \
+  --sasl.username your-api-key --sasl.password your-api-secret \
+  --security.protocol SASL_SSL &
+
+macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic \
+  --bootstrap.servers pkc-xxxxx.region.aws.confluent.cloud:9092 \
+  --sasl.username your-api-key --sasl.password your-api-secret \
+  --security.protocol SASL_SSL &
 ```
 
-To test using a sasl/ssl authenticated system (including Confluent Cloud)
-```text
-   macos/uploader  --input.dir /tmp/streamsend/upload   --topic file-chunk-topic --bootstrap.servers ... --sasl.username ... --sasl.password ... --security.protocol SASL_SSL &
-   sleep 1
- macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic --bootstrap.servers pkc...confluent.cloud --sasl.username .. --sasl.password .. --security.protocol SASL_SSL &
+AWS MSK:
+```bash
+macos/uploader --input.dir /tmp/streamsend/upload --topic file-chunk-topic \
+  --bootstrap.servers your-cluster:9096 \
+  --sasl.username streamsend-user --sasl.password your-password \
+  --security.protocol SASL_SSL --sasl.mechanism SCRAM-SHA-512 &
+
+macos/downloader --output.dir /tmp/streamsend/download --topic file-chunk-topic \
+  --bootstrap.servers your-cluster:9096 \
+  --sasl.username streamsend-user --sasl.password your-password \
+  --security.protocol SASL_SSL --sasl.mechanism SCRAM-SHA-512 &
 ```
-
-### Windows
-
-For Windows environments, create the directories and get the Windows executables:
-```powershell
-mkdir C:\temp\streamsend\upload, C:\temp\streamsend\download
-```
-
-Get the latest Windows Streamsend Uploader & Downloader:
-```powershell
-Invoke-WebRequest -Uri "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-windows-latest.zip" -OutFile "file-chunk-windows-latest.zip"
-Expand-Archive -Path "file-chunk-windows-latest.zip" -DestinationPath "."
-```
-
-To test using a local Kafka (at localhost:9092)
-```powershell
-Start-Process -FilePath "windows\uploader.exe" -ArgumentList "--input.dir", "C:\temp\streamsend\upload", "--topic", "file-chunk-topic" -NoNewWindow
-Start-Sleep 1
-Start-Process -FilePath "windows\downloader.exe" -ArgumentList "--output.dir", "C:\temp\streamsend\download", "--topic", "file-chunk-topic" -NoNewWindow
-```
-
-To test using a sasl/ssl authenticated system (including Confluent Cloud)
-```powershell
-Start-Process -FilePath "windows\uploader.exe" -ArgumentList "--input.dir", "C:\temp\streamsend\upload", "--topic", "file-chunk-topic", "--bootstrap.servers", "...", "--sasl.username", "...", "--sasl.password", "...", "--security.protocol", "SASL_SSL" -NoNewWindow
-Start-Sleep 1
-Start-Process -FilePath "windows\downloader.exe" -ArgumentList "--output.dir", "C:\temp\streamsend\download", "--topic", "file-chunk-topic", "--bootstrap.servers", "pkc...confluent.cloud", "--sasl.username", "..", "--sasl.password", "..", "--security.protocol", "SASL_SSL" -NoNewWindow
-```
-
-### Linux
-
-You can also download the [AMD64](https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-linux-amd64-latest.tar.gz) binaries
-Or [Docker](https://hub.docker.com/u/streamsend) (linux/amd64)
-
-## Testing File Streaming
-
-Queue up some content to stream (adjust paths for your platform):
-
-**macOS/Linux:**
-```text
- cp -R /usr/share/man /tmp/streamsend/upload
-```
-
-**Windows:**
-```powershell
-Copy-Item -Path "C:\Windows\System32\drivers\etc" -Destination "C:\temp\streamsend\upload" -Recurse
-```
-
-After the 5-second file.minimum.age.ms, this streams files from the source directory.
-Almost all files fit inside a Kafka message so they stream as single-chunks; larger files are streamed in multiple chunks because they exceed the chunk size. The chunk size is determined automatically (check the Uploader logging) so it depends on your cluster limits.
-Sym-links are ignored; which accounts for the file-count delta between the directories. 
-
-Let's stream a large file:
-
-**macOS/Linux:**
-```text
-cp /var/log/install.log /tmp/streamsend/upload
-```
-
-**Windows:**
-```powershell
-Copy-Item -Path "C:\Windows\Logs\WindowsUpdate\WindowsUpdate.log" -Destination "C:\temp\streamsend\upload"
-```
-
-Or restart Uploader to generate a 50MB test file every ten seconds:
-
-**macOS:**
-```text
-macos/uploader    --input.dir /tmp/streamsend/upload   --topic file-chunk-topic --generate.test.file.bytes 50000000
-```
-
-**Windows:**
-```powershell
-windows\uploader.exe --input.dir C:\temp\streamsend\upload --topic file-chunk-topic --generate.test.file.bytes 50000000
-```
-
-Other Uploader configuration options https://streamsend.io/#/configuration/uploader
-
-## Platform Support
-
-The File-chunk Pipeline is available in multiple packaging options:
-
-- **Linux AMD64**: Binary releases and Docker images
-- **macOS**: Binary releases only
-- **Windows**: Binary releases (standalone executable)
-- **Linux ARM64**: Forthcoming support (binary releases and Docker images)
-
-## Prerequisites
-
-### All Platforms
-- Kafka cluster (self-hosted or managed service)
 
 ### Linux (AMD64)
-- libssl3, libsasl2-2, libzstd1 (install with your package manager if needed)
 
-### macOS
-- macOS 10.15 or later
-- librdkafka (can be installed with Homebrew: `brew install librdkafka`)
+**Prerequisites:**
+- Linux system with AMD64 architecture
+- System libraries: `libssl3`, `libsasl2-2`, `libzstd1`
 
-### Windows
-- Windows 10 or later
-- No additional dependencies required (standalone executable)
-
-### Docker
-- Docker (for containerized deployment on AMD64)
-
-## Existing Kafka Client (Optional)
-
-If you already have a Kafka client installed on your system (such as librdkafka, Confluent Platform, or other Kafka distributions), you may already have some of the required dependencies:
-
-**What's typically included with Kafka clients:**
-- librdkafka library (the core dependency for our binaries)
-- SSL/TLS libraries (libssl)
-- SASL libraries (libsasl2)
-- Compression libraries (libzstd, liblz4, libsnappy)
-
-**To check if you have librdkafka installed:**
+**Installation:**
 ```bash
-# On Linux
-ldconfig -p | grep librdkafka
-# or
-find /usr/lib /usr/local/lib -name "librdkafka.so*" 2>/dev/null
+# Install dependencies (Ubuntu/Debian)
+sudo apt update
+sudo apt install libssl3 libsasl2-2 libzstd1
 
-# On macOS
-brew list librdkafka
-```
+# Or for Amazon Linux/RHEL/CentOS
+sudo yum install openssl-libs cyrus-sasl-lib zstd
 
-**Important notes:**
-- The included librdkafka in our package is version 2.2.0
-- If you have an older version installed system-wide, our binaries will use the included version
-- Having existing Kafka clients doesn't eliminate the need for other system libraries (libssl3, libsasl2-2)
-- For Docker deployments, all dependencies are included in the image
-- Windows executables include all required dependencies
-- Windows executables include all required dependencies
+# Download and extract
+wget "https://github.com/streamsend-io/docsify/raw/refs/heads/main/downloads/file-chunk-linux-amd64-latest.tar.gz"
+tar -xzf file-chunk-linux-amd64-latest.tar.gz
 
-## Binary Installation
-
-Download the appropriate package for your platform from our [downloads page](https://github.com/streamsend-io/docsify/tree/main/downloads):
-- Linux AMD64: `file-chunk-linux-amd64-latest.tar.gz`
-- macOS: `file-chunk-macos-latest.tar.gz`
-- Windows: `file-chunk-windows-latest.zip`
-
-### Linux and macOS
-
-Extract the package:
-```bash
-tar -xzvf file-chunk-{platform}-latest.tar.gz
-cd {platform}/
-```
-
-The package includes:
-- `uploader` and `downloader` binaries
-- Sample configuration files in the `config/` directory
-- Required libraries (Linux only)
-- README with platform-specific instructions
-
-For Linux systems, install the included libraries:
-```bash
-sudo cp librdkafka.so* /usr/lib/
+# Install libraries
+sudo cp linux-amd64/librdkafka.so* /usr/local/lib/
 sudo ldconfig
 ```
 
-### Windows
+**Usage:**
+```bash
+# Create directories
+mkdir -p /tmp/streamsend/upload /tmp/streamsend/download
 
-Extract the package:
-```powershell
-Expand-Archive -Path "file-chunk-windows-latest.zip" -DestinationPath "."
-cd windows\
+# Same command patterns as macOS, replace 'macos/' with 'linux-amd64/'
+linux-amd64/uploader --input.dir /tmp/streamsend/upload --topic file-chunk-topic
 ```
 
-The package includes:
-- `uploader.exe` and `downloader.exe` executables
-- Sample configuration files in the `config/` directory
-- README with Windows-specific instructions
+### Docker
 
-No additional installation steps are required - the executables are standalone and include all dependencies.
-
-## Docker Installation
-
-Pull the Docker images:
+**Installation:**
 ```bash
-# For AMD64
+# Pull images
 docker pull streamsend/uploader:latest
 docker pull streamsend/downloader:latest
 ```
 
-Run with Docker:
+**Usage:**
 ```bash
-# Uploader
-docker run -v $(pwd)/config:/config -v $(pwd)/files:/files streamsend/uploader:latest
+# Create local directories
+mkdir -p ./upload ./download
 
-# Downloader
-docker run -v $(pwd)/config:/config -v $(pwd)/files:/files streamsend/downloader:latest
+# Local Kafka
+docker run -v $(pwd)/upload:/files/input -v $(pwd)/download:/files/output \
+  streamsend/uploader:latest --input.dir /files/input --topic file-chunk-topic
+
+# With authentication (Confluent Cloud or AWS MSK)
+docker run -v $(pwd)/upload:/files/input \
+  streamsend/uploader:latest \
+  --input.dir /files/input --topic file-chunk-topic \
+  --bootstrap.servers your-bootstrap-servers \
+  --sasl.username your-username --sasl.password your-password \
+  --security.protocol SASL_SSL --sasl.mechanism SCRAM-SHA-512
 ```
+
+## Testing File Streaming
+
+Queue up content to stream:
+
+```bash
+# Copy some files to test
+cp -R /usr/share/man /tmp/streamsend/upload  # Linux/macOS
+
+# Generate a large test file
+echo "This creates a 50MB test file every 10 seconds"
+uploader --input.dir /tmp/streamsend/upload --topic file-chunk-topic \
+  --generate.test.file.bytes 50000000
+```
+
+After the default 5-second `file.minimum.age.ms`, files stream from the source directory. Most files fit in single Kafka messages; larger files are automatically chunked.
+
+## Configuration
+
+- **Small files**: Streamed as single chunks
+- **Large files**: Automatically chunked based on Kafka cluster limits
+- **Symlinks**: Ignored by the uploader
+- **File processing**: Files are renamed after successful upload
+
+For detailed configuration options, see:
+- [Uploader Configuration](https://streamsend.io/#/configuration/uploader)
+- [Downloader Configuration](https://streamsend.io/#/configuration/downloader)
 
 ## Compatibility
 
-### Authentication Schemes
+### Authentication Support
+- ✅ **SASL/SSL**: PLAIN and SCRAM-SHA-512 mechanisms
+- ✅ **No authentication**: For development environments
+- 🔄 **Planned**: OAuth 2.0 bearer token authentication
 
-Currently supported:
-- **SASL/SSL**: Full support for SASL PLAIN over SSL
-- **No authentication**: For development and testing environments
+### Platform Support
+- ✅ **Linux AMD64**: Binary releases and Docker images
+- ✅ **macOS**: Binary releases (10.15+)
+- 🔄 **Linux ARM64**: Forthcoming support
 
-Planned for future releases:
-- **OAuth**: OAuth 2.0 bearer token authentication
-- **SASL/SCRAM**: SCRAM-SHA-256 and SCRAM-SHA-512 mechanisms
-
-### Message Format
-
-- **Payload**: Pure bytestream format only
-- **Schema Registration**: Not supported - no integration with Schema Registry
-- **Stream Processing**: Not supported - designed for file transfer only
-
-### Topic Configuration
-
-- **Partitions**: Supports both single and multi-partition topics
-- **Current Edition**: Uses a single partition for all chunk traffic
-- **Future Releases**: Will support partition-based parallelism
-
-### Filesystem Requirements
-
-- **Access Type**: Locally accessible filesystem required
-- **Uploader**: Requires write access to rename files after successful upload
-- **Downloader**: Requires write access to target directory
-- **Chunk Processing**: In-memory processing, no additional work storage needed
-
-### Kafka Configuration
-
-- **max.message.bytes**: No specific constraint - the uploader automatically adjusts to use message size limits optimally
-- **Small Files**: Currently limited to one file per message
-- **Future Enhancement**: Bin-packing of small files into single Kafka messages for improved efficiency
-
-### Resource Requirements
-
-- **Memory**: Minimal - only needs to buffer individual chunks
-- **CPU**: Low overhead - simple chunk processing
-- **Network**: Bandwidth dependent on file transfer rates
-- **Storage**: No temporary storage required beyond source/destination directories
+### Kafka Compatibility
+- **Topic types**: Single and multi-partition topics
+- **Message format**: Pure bytestream (no Schema Registry)
+- **Cleanup policies**: Supports both standard and compacted topics
+- **Cluster types**: Apache Kafka, Confluent Cloud, AWS MSK
