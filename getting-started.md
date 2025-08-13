@@ -21,8 +21,9 @@ bin/zookeeper-server-start.sh config/zookeeper.properties &
 bin/kafka-server-start.sh config/server.properties &
 
 # Create required topics
-bin/kafka-topics.sh --create --topic streamsend-state-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1 --config cleanup.policy=compact
-bin/kafka-topics.sh --create --topic file-chunk-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+
+Note: this is no longer required, as Uploader will auto-create the file-chunk topic.
+
 ```
 
 **Connection settings for local Kafka:**
@@ -128,29 +129,6 @@ sasl.mechanism=SCRAM-SHA-512
 ssl.truststore.location=/usr/lib/jvm/java-1.8.0-amazon-corretto/jre/lib/security/cacerts
 ssl.truststore.password=changeit
 EOF
-```
-
-**5. Create Required Topics:**
-```bash
-# Get SCRAM bootstrap servers
-BOOTSTRAP_SERVERS_SCRAM="your-cluster-scram-bootstrap-servers:9096"
-
-# Create compacted state topic
-bin/kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVERS_SCRAM} \
-  --command-config scram-client.properties \
-  --create --topic streamsend-state-topic \
-  --partitions 1 --replication-factor 3 \
-  --config cleanup.policy=compact
-
-# Create standard file chunk topic
-bin/kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVERS_SCRAM} \
-  --command-config scram-client.properties \
-  --create --topic file-chunk-topic \
-  --partitions 1 --replication-factor 3
-
-# Verify topics
-bin/kafka-topics.sh --bootstrap-server ${BOOTSTRAP_SERVERS_SCRAM} \
-  --command-config scram-client.properties --list
 ```
 
 **Connection settings for AWS MSK:**
